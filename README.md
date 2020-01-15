@@ -1,2 +1,2 @@
 # Excel-Python
-A program to build SQL scripts from an data in an Excel spreadsheet
+A program to build SQL scripts from data in an Excel spreadsheet.
