@@ -1,5 +1,5 @@
 # Excel-Python
-A program to build SQL scripts from data in an Excel spreadsheet.
+A program written in Python to build SQL scripts from data in an Excel spreadsheet on a Windows machine.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ Upon starting the Excel Python program the user will be prompted to choose wheth
 
 #### Build Excel template
 
-The user will be prompted to enter a SQL Server name, database name, and a table name. 
+The user will be prompted to enter a SQL Server name, database name, and a table name from drop down menus. 
 
 If all of this info is accepted the user will be prompted to choose the types of scripts this template will be used to build (insert, update, delete, or select). 
 
