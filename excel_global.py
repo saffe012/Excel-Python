@@ -4,15 +4,196 @@ Matt Saffert
 1-9-2020
 '''
 
-import Tkinter
+import openpyxl
+import tkinter
 import pyodbc
 import constants as cons
+import subprocess
+import sys
+
+
+def getSQLTableInfo(sql_table_name, cursor):
+    '''Gets the values for columns: info.COLUMN_NAME, info.DATA_TYPE,
+    info.IS_NULLABLE, and sy.is_identity from a specified SQL table
+
+    :param1 sql_table_name: str
+    :param2 cursor: pyodbc.cursor
+
+    return List[str], List[str], List[int], List[int]
+    '''
+
+    print(type(cursor))
+    cursor.execute("SELECT info.COLUMN_NAME, info.DATA_TYPE, info.IS_NULLABLE, sy.is_identity FROM INFORMATION_SCHEMA.COLUMNS info, sys.columns sy WHERE info.TABLE_NAME = '" +
+                   sql_table_name + "' AND sy.object_id = object_id('" + sql_table_name + "') AND sy.name = info.COLUMN_NAME;")
+
+    # Lists used to hold the values retireved from SQL script in their corresponding indexes
+    sql_column_names = []
+    sql_column_types = []
+    column_is_nullable = []
+    column_is_identity = []
+
+    # populate row lists with values from the select script
+    for row in cursor:
+        sql_column_names.append(row[0])
+        sql_column_types.append(row[1])
+        column_is_nullable.append(row[2])
+        column_is_identity.append(row[3])
+
+    return sql_column_names, sql_column_types, column_is_nullable, column_is_identity
+
+
+def connectToSQLServer():
+    '''Connects to an instance of a SQL Server and allows the user to choose a
+    database to work with on that instance.
+
+    return List[str], pyodbc.cursor
+    '''
+
+    sql_server_name = ''
+
+    while sql_server_name == '':
+        description = "Please enter the name of the SQL Server where your database is located:"
+        label = 'SQL Server name: '
+        sql_server_name = createTextEntryBox(
+            description, label).get()
+        if sql_server_name == '':
+            createPopUpBox(
+                "Please enter a SQL server instance name.")
+
+    # opens connection to specified SQL server and master DB to get list of all dbs on server
+    dbs = pyodbc.connect('Driver={SQL Server};'
+                         'Server=' + sql_server_name + ';'
+                         'Database=' + 'master' + ';'
+                         'Trusted_Connection=yes;')
+
+    dbs_cursor = dbs.cursor()
+
+    # executes SQL script on database connection to get list of all dbs on server
+    dbs_cursor.execute(
+        "SELECT name, database_id, create_date FROM sys.databases;")
+
+    databases = []
+
+    # populate databases with each database selected from the query
+    for db in dbs_cursor:
+        databases.append(db[0])
+
+    description = "Please enter the name of the database where the table you'd like to work with is located:"
+    label = 'SQL database name: '
+
+    sql_database_name = createDropDownBox(
+        description, label, databases)
+
+    # opens connection to specified SQL server and database
+    conn = pyodbc.connect('Driver={SQL Server};'
+                          'Server=' + sql_server_name + ';'
+                          'Database=' + sql_database_name + ';'
+                          'Trusted_Connection=yes;')
+
+    cursor = conn.cursor()
+
+    # executes SQL script on database connection to get all tables in the database
+    cursor.execute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG='" +
+                   sql_database_name + "' ORDER BY TABLE_NAME;")
+
+    tables = []
+
+    # populate tables with each table in the database
+    for table in cursor:
+        tables.append(table[0])
+
+    return tables, cursor
+
+
+def addQuitMenuButton(root):
+    '''Adds quiting capability to a tkinter box both as menu option and the "X"
+    in upper right hand corner of box
+
+
+    :param1 root: tkinter
+
+    :return: NONE
+    '''
+
+    menubar = tkinter.Menu(root)
+    menubar.add_command(label="Quit!", command=lambda: closeProgram())
+    root.protocol("WM_DELETE_WINDOW", lambda: closeProgram())
+    root.config(menu=menubar)
+
+
+def closeProgram():
+    '''Closes the program after confirming with user
+
+    :return: NONE
+    '''
+
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
+    root.title('Excel Python')
+    output_string = "Are you sure you want to close the program?"
+    w = tkinter.Label(root, text=output_string)
+    w.pack()
+    w.place(relx=0.5, rely=0.2, anchor='center')
+    str_len = len(output_string)
+    text_height = (str_len // 35) + 1
+    height = 150 + (text_height * 10)
+    root.geometry("450x150")
+    button = tkinter.Button(root, text='Yes', width=15, command=lambda: quit()).place(
+        relx=0.35, rely=0.8, anchor='center')
+    button = tkinter.Button(root, text='No', width=15, command=root.destroy).place(
+        relx=0.65, rely=0.8, anchor='center')
+    tkinter.mainloop()
+
+def createYesNoBox(description, label1, label2):
+    '''Creates a tkinter pop-up box that gives the user a choice between 2 options
+
+    :param1 description: str
+    :param2 label1: str
+    :param3 label2: str
+
+    :return: str
+    '''
+
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
+    root.title('Excel Python')
+    root.geometry("500x500")
+    program_mode = tkinter.StringVar()
+    program_mode.set(label1)
+    w = tkinter.Label(
+        root, text=description)
+    w.pack()
+    w.place(relx=0.5, rely=0.1, anchor='center')
+    tkinter.Radiobutton(root, text=label1, variable=program_mode,
+                        value=label1).place(relx=0.5, rely=0.4, anchor='center')
+    tkinter.Radiobutton(root, text=label2, variable=program_mode,
+                        value=label2).place(relx=0.5, rely=0.5, anchor='center')
+    button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+        relx=0.5, rely=0.6, anchor='center')
+    tkinter.mainloop()
+
+    return program_mode.get()
+
+
+def colorCell(worksheet, cell, color):
+    '''Colors a cell of the Excel worksheet the passed in color
+
+    :param1 worksheet: openpyxl.worksheet.worksheet.Worksheet
+    :param2 cell: str
+    :param3 color: str
+
+    :return: NONE
+    '''
+
+    fill = openpyxl.styles.PatternFill(
+        fill_type='solid', start_color=color, end_color=color)
+    worksheet[cell].fill = fill
 
 
 def getExcelCellToInsertInto(column, row):
     '''Gets the column and row of the excel spreadsheet that the script should be inserted into.
 
-    :param1 table: tuple
+    :param1 column: int
     :param2 row: int
 
     :return: str
@@ -28,83 +209,38 @@ def getExcelCellToInsertInto(column, row):
     return excel_cell
 
 
-def getTemplateInfo():
-    '''Creates a series of Tkinter dialogues that asks user to info about the
-    template they are trying to create.
-
-    :return: List[str], List[str], List[str], List[int], str
-    '''
-
-    description = "Please enter the name of the SQL Server where your database is located:"
-    label = 'SQL Server name: '
-    sql_server_name = createTextEntryBox(description, label).get()
-
-    description = "Please enter the name of the database where the table you'd like to work with is located:"
-    label = 'SQL database name: '
-    sql_database_name = createTextEntryBox(description, label).get()
-
-    description = "Please enter the name of the table you'd like to work with in the " + \
-        sql_database_name + " database:"
-    label = 'SQL table name: '
-    sql_table_name = createTextEntryBox(description, label).get()
-
-    # opens connection to specified SQL server and database
-    conn = pyodbc.connect('Driver={SQL Server};'
-                          'Server=' + sql_server_name + ';'
-                          'Database=' + sql_database_name + ';'
-                          'Trusted_Connection=yes;')
-
-    cursor = conn.cursor()
-
-    # executes SQL script on database connection
-    cursor.execute("SELECT info.COLUMN_NAME, info.DATA_TYPE, info.IS_NULLABLE, sy.is_identity FROM INFORMATION_SCHEMA.COLUMNS info, sys.columns sy WHERE info.TABLE_NAME = '" +
-                   sql_table_name + "' AND sy.object_id = object_id('" + sql_table_name + "') AND sy.name = info.COLUMN_NAME;")
-
-    # Lists used to hold the values retireved from SQL script in their corresponding indexes
-    sql_column_names = []
-    sql_column_types = []
-    column_is_nullable = []
-    column_is_identity = []
-
-    # populate row lists with values from the serlect script
-    for row in cursor:
-        sql_column_names.append(row[0])
-        sql_column_types.append(row[1])
-        column_is_nullable.append(row[2])
-        column_is_identity.append(row[3])
-
-    return sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name
-
-
 def getProgramMode():
-    '''Creates a Tkinter dialog box that asks the user what mode they'd like
+    '''Creates a tkinter dialog box that asks the user what mode they'd like
     the program to enter. (build an Excel template or write scripts)
 
     :return: instance
     '''
 
-    root = Tkinter.Tk()
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
     root.title('Excel Python')
     root.geometry("500x500")
-    program_mode = Tkinter.StringVar()
+    program_mode = tkinter.StringVar()
     program_mode.set("scripts")
-    w = Tkinter.Label(
+    w = tkinter.Label(
         root, text="Would you like to build an Excel template or write SQL scripts to an Excel file: ")
     w.pack()
     w.place(relx=0.5, rely=0.1, anchor='center')
-    Tkinter.Radiobutton(root, text='Build Excel template', variable=program_mode,
+    tkinter.Radiobutton(root, text='Check if workbook is valid for writing scripts', variable=program_mode,
+                        value='validate').place(relx=0.5, rely=0.3, anchor='center')
+    tkinter.Radiobutton(root, text='Build Excel template', variable=program_mode,
                         value='template').place(relx=0.5, rely=0.4, anchor='center')
-    Tkinter.Radiobutton(root, text='Write SQL scripts', variable=program_mode,
+    tkinter.Radiobutton(root, text='Write SQL scripts', variable=program_mode,
                         value='scripts').place(relx=0.5, rely=0.5, anchor='center')
-    button = Tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+    button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
         relx=0.5, rely=0.6, anchor='center')
-    Tkinter.mainloop()
+    tkinter.mainloop()
 
     return program_mode
 
 
 def createPopUpBox(output_string):
-    '''Creates a Tkinter pop-up box that displays whatever test is input with an "Ok" button
+    '''Creates a tkinter pop-up box that displays whatever test is input with an "Ok" button
     to acknowledge info/close window
 
     :param1 output_string: str
@@ -112,40 +248,106 @@ def createPopUpBox(output_string):
     :return: NONE
     '''
 
-    root = Tkinter.Tk()
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
     root.title('Excel Python')
-    root.geometry("450x150")
-    w = Tkinter.Label(root, text=output_string)
+    w = tkinter.Label(root, text=output_string)
     w.pack()
     w.place(relx=0.5, rely=0.2, anchor='center')
-    button = Tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
-        relx=0.5, rely=0.5, anchor='center')
-    Tkinter.mainloop()
+    str_len = len(output_string)
+    text_height = (str_len // 35) + 1
+    height = 150 + (text_height * 10)
+    root.geometry("450x150")
+    button = tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
+        relx=0.5, rely=0.8, anchor='center')
+    tkinter.mainloop()
+
+
+def createErrorBox(output_string):
+    '''Creates a tkinter pop-up box that displays the error message with an "Ok" button
+    to acknowledge error/close window
+
+    :param1 output_string: str
+
+    :return: NONE
+    '''
+
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
+    root.title('Excel Python')
+    str_len = len(output_string)
+    text_height = (str_len // 35) + 1
+    height = 150 + (text_height * 10)
+    root.geometry("450x150")
+    T = tkinter.Text(root, height=text_height, width=35)
+    T.pack()
+    T.insert(tkinter.END, output_string)
+    button = tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
+        relx=0.5, rely=0.8, anchor='center')
+    tkinter.mainloop()
 
 
 def createTextEntryBox(description, label):
-    '''Creates a Tkinter dialog box that asks the user to enter the requested
+    '''Creates a tkinter dialog box that asks the user to enter the requested
     information in a text box.
 
     :param1 description: str
-    :param1 label: str
+    :param2 label: str
 
     :return: instance
     '''
 
-    root = Tkinter.Tk()
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
     root.title('Excel Python')
     root.geometry("600x400")
-    entry_value = Tkinter.StringVar()
-    w = Tkinter.Label(root, text=description)
+    entry_value = tkinter.StringVar()
+    w = tkinter.Label(root, text=description)
     w.pack()
     w.place(relx=0.5, rely=0.3, anchor='center')
-    Tkinter.Label(root, text=label).place(
+    tkinter.Label(root, text=label).place(
         relx=0.4, rely=0.4, anchor='center')
-    e1 = Tkinter.Entry(root, textvariable=entry_value)
+    e1 = tkinter.Entry(root, textvariable=entry_value)
     e1.place(relx=0.6, rely=0.4, anchor='center')
-    button = Tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+    button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
         relx=0.5, rely=0.5, anchor='center')
-    Tkinter.mainloop()
+    tkinter.mainloop()
 
     return entry_value
+
+
+def createDropDownBox(description, label, data):
+    '''Creates a tkinter dialog box that asks the user to enter the requested
+    information in a text box.
+
+    :param1 description: str
+    :param2 label: str
+    :param3 data: List[?]
+
+    :return: ?
+    '''
+
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
+    root.title('Excel Python')
+    root.geometry("500x500")
+
+    sql_database_name = tkinter.StringVar(root)
+    sql_database_name.set(data[0])  # default value
+
+    w = tkinter.Label(root, text=description)
+    w.pack()
+    w.place(relx=0.5, rely=0.3, anchor='center')
+
+    tkinter.Label(root, text=label).place(
+        relx=0.4, rely=0.4, anchor='center')
+
+    m = tkinter.OptionMenu(root, sql_database_name, *data)
+    m.pack()
+    m.place(relx=0.6, rely=0.4, anchor='center')
+
+    button = tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
+        relx=0.5, rely=0.5, anchor='center')
+    tkinter.mainloop()
+
+    return sql_database_name.get()
