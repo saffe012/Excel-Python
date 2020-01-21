@@ -48,11 +48,19 @@ Once all of the include/where statements have been decided on, the user will be 
 
 #### Write SQL scripts
 
-The user will first be shown a window explaining the proper formatting of the Excel spreadsheet they plan to use to create their scripts.
+The user will first be shown a window explaining the proper formatting of the Excel spreadsheet they plan to use to create their scripts. They will then be asked to select the Excel spreadsheet that is formatted to be compatable with this program and is populated with data that they desire to be turned into scripts. At this point the spreadsheet needs to be validated by the program to ensure that the program will be able to write scripts from the data contained in the spreadsheet. 
 
-They will then be asked to select the Excel spreadsheet that is formatted to be compatable with this program and is populated with data that they desire to be turned into scripts. 
+There are two ways that a user can choose to validate their spreadsheet. The first is to connect to a SQL Server instance and database (preferred method) which will compare the design of the table specified in the Excel spreadsheet directly with the one in the database. The other way to validate the spreadsheet is a generic validation which will make sure that scripts can be written but does not guarantee that the design of the scripts match the design of the table they are being written for. If a spreadsheet passes validation, scripts will be generated for it. If it fails validation, windows will pop up explaining why validation failed and the program will close. The user should fix the problems in their spreadsheet then run the program again.
 
-Then the user will be asked to choose a file to save the scripts to. The scripts should be saved as an .xlsx file. 
+Once the spreadsheet is validated and scripts have been written, the user will be asked to choose a file to save the scripts to. The scripts should be saved as an .xlsx file. 
+
+#### Validate Excel spreadsheet
+
+The user will first be shown a window explaining the proper formatting of the Excel spreadsheet they plan to use to create their scripts. They will then be asked to select the Excel spreadsheet that is formatted to be compatable with this program and is populated with data that they desire to be turned into scripts.
+
+There are two ways that a user can choose to validate their spreadsheet. The first is to connect to a SQL Server instance and database (preferred method) which will compare the design of the table specified in the Excel spreadsheet directly with the one in the database. The other way to validate the spreadsheet is a generic validation which will make sure that scripts can be written but does not guarantee that the design of the scripts match the design of the table they are being written for. If a spreadsheet passes validation, the user will be notified. If it fails validation, windows will pop up explaining why validation failed and the program will close. The user should fix the problems in their spreadsheet then run the program again.
+
+If a user is choosing to validate more than once spreadsheet in a workbook and one or more sheets pass and one or more sheets fails, they will be greeted with a caution box that warns them to write scripts with care to ensure no mistakes are made.
 
 ## Authors
 Matt Saffert
