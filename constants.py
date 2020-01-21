@@ -64,6 +64,11 @@ SQL_OTHER_TYPE = [
 ]
 
 '''
+Excel color constants
+'''
+RED = 'FFFF0000'
+
+'''
 Excel row indexes
 '''
 INFO_ROW = 0
@@ -72,6 +77,11 @@ COLUMN_DATA_TYPE_ROW_INDEX = 2
 INCLUDE_ROW_INDEX = 3
 WHERE_ROW_INDEX = 4
 START_OF_DATA_ROWS_INDEX = 5
+
+'''
+Types of scripts generatable by this program
+'''
+TYPE_OF_SCRIPTS_AVAILABLE = ['insert', 'delete', 'select', 'update']
 
 '''
 Python column index to excel letter column index

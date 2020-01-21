@@ -7,21 +7,23 @@ Matt Saffert
 
 import constants as cons
 import re
-import Tkinter
+import tkinter
 import excel_global
+import validate_workbook as validate
 
 
 def displayExcelFormatInstructions():
-    '''Creates a Tkinter pop-up box that explains the formatting of the excel
+    '''Creates a tkinter pop-up box that explains the formatting of the excel
     spreadsheet that will be read into the program
 
     :return: NONE
     '''
 
-    root = Tkinter.Tk()
+    root = tkinter.Tk()
+    excel_global.addQuitMenuButton(root)
     root.title('Excel Python')
     root.geometry("600x500")
-    w = Tkinter.Label(root, text='Please make sure the excel spreadsheet that '
+    w = tkinter.Label(root, text='Please make sure the excel spreadsheet that '
                       'will be read was made with the tool and/or is formatted '
                       'correctly:\nRow 1: col1: SQL tablename col2: script type\nRow 2: SQL column '
                       'names\nRow 3: SQL data types\nRow 4: put "include" in '
@@ -30,7 +32,7 @@ def displayExcelFormatInstructions():
                       'clause. (For inserts, leave blank)\nRow 6: Start of data')
     w.pack()
     w.place(relx=0.5, rely=0.2, anchor='center')
-    button = Tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
+    button = tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
         relx=0.5, rely=0.5, anchor='center')
     root.mainloop()
 
@@ -129,6 +131,8 @@ def writeScripts(table, script_type, table_name):
 
     :return: dict
     '''
+
+    scripts = {}
 
     if script_type == 'insert':
         scripts = createInsertScripts(table_name, table)
@@ -231,7 +235,8 @@ def createInsertScripts(table_name, table):
         values_statement = createValuesClause(
             table, column_types, column_includes, insert_statement, row)
 
-        excel_cell = excel_global.getExcelCellToInsertInto(len(table[row]), row)
+        excel_cell = excel_global.getExcelCellToInsertInto(
+            len(table[row]), row)
         script_dict[excel_cell] = values_statement
 
     return script_dict
@@ -349,7 +354,8 @@ def createUpdateScripts(table_name, table):
         where_statement = createWhereClause(
             table, column_names, column_types, column_where, update_statement, row)
 
-        excel_cell = excel_global.getExcelCellToInsertInto(len(table[row]), row)
+        excel_cell = excel_global.getExcelCellToInsertInto(
+            len(table[row]), row)
         script_dict[excel_cell] = where_statement
 
     return script_dict
@@ -376,7 +382,8 @@ def createDeleteScripts(table_name, table):
         where_statement = createWhereClause(
             table, column_names, column_types, column_where, pre_statement, row)
 
-        excel_cell = excel_global.getExcelCellToInsertInto(len(table[row]), row)
+        excel_cell = excel_global.getExcelCellToInsertInto(
+            len(table[row]), row)
         script_dict[excel_cell] = where_statement
 
     return script_dict
@@ -407,7 +414,8 @@ def createSelectScripts(table_name, table):
         where_statement = createWhereClause(
             table, column_names, column_types, column_where, select_statement, row)
 
-        excel_cell = excel_global.getExcelCellToInsertInto(len(table[row]), row)
+        excel_cell = excel_global.getExcelCellToInsertInto(
+            len(table[row]), row)
         script_dict[excel_cell] = where_statement
 
     return script_dict
@@ -415,28 +423,39 @@ def createSelectScripts(table_name, table):
 
 def writeToExcel(workbook):
     '''Iterates through each worksheet in the imported workbook, creates
-    scripts for each worksheet, and writes the scripts to a new workbook
+    scripts for each worksheet, and writes the scripts to a new workbook. Returns
+    True if scripts were generated and need to be saved, otherwise False
 
     :param1 workbook: openpyxl.workbook.workbook.Workbook
 
-    :return: NONE
+    :return: bool
     '''
+
+    any_changes = False
 
     for worksheet in workbook.worksheets:
         if worksheet.title != 'configuration':  # skip the configuration sheet in the Excel book
-            script_type = getTypeOfScript(
-                worksheet)  # Tkinter dialog box
-            description = "Please enter the name of the SQL table in which you'd like to write " + \
-                script_type + " scripts for '" + worksheet.title + "' worksheet:"
-            label = "Table name: "
-            table_name = getTableName(worksheet)
+            validate_with_sql = excel_global.createYesNoBox(
+                'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
+            # check if worksheet is is valid and if user wants to write scripts for them
+            valid_template = validate.validWorksheet(
+                worksheet, validate_with_sql)
 
-            all_rows = tuple(worksheet.rows)
+            if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
+                any_changes = True  # changes were made and need to be saved
+                script_type = getTypeOfScript(
+                    worksheet)  # tkinter dialog box
 
-            # returns dict containing excel cell coordinates as key and script to writeas value
-            scripts = writeScripts(
-                all_rows, script_type, table_name)
+                table_name = getTableName(worksheet)
 
-            # writes script to worksheet
-            for cell, script in scripts.items():
-                worksheet[cell] = script
+                all_rows = tuple(worksheet.rows)
+
+                # returns dict containing excel cell coordinates as key and script to writeas value
+                scripts = writeScripts(
+                    all_rows, script_type, table_name)
+
+                # writes script to worksheet
+                for cell, script in scripts.items():
+                    worksheet[cell] = script
+
+    return any_changes
