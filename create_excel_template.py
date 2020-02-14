@@ -8,6 +8,7 @@ Matt Saffert
 import constants as cons
 import tkinter
 import excel_global
+import subprocess
 
 
 def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_is_identity, script_type):
@@ -63,28 +64,28 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
             if column_is_nullable[i] == 'NO' and script_type not in ('select', 'update'):
                 include_values.append(var)
                 b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i].get(), state='disabled')
+                    root, text=column_names[i], variable=include_values[i], state='disabled')
                 disable_change[i] = 1
                 b.select()
                 b.place(relx=relx, rely=rely, anchor='center')
             else:  # if nullable or select or update, then data can be but does not need to be included
                 include_values.append(var)
                 b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i].get())
+                    root, text=column_names[i], variable=include_values[i])
                 b.deselect()
                 b.place(relx=relx, rely=rely, anchor='center')
         else:  # column is identity column so cannot be updated or inserted into.
             if script_type != 'select':  # insert/update on identity column is NOT allowed
                 include_values.append(var)
                 b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i].get(), state='disabled')
+                    root, text=column_names[i], variable=include_values[i], state='disabled')
                 disable_change[i] = 1
                 b.deselect()
                 b.place(relx=relx, rely=rely, anchor='center')
             else:  # select on identity column is allowed
                 include_values.append(var)
                 b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i].get())
+                    root, text=column_names[i], variable=include_values[i])
                 b.deselect()
                 b.place(relx=relx, rely=rely, anchor='center')
         count += 1
@@ -98,6 +99,9 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
             relx=0.5, rely=(horizontal_screen_fraction * 12), anchor='center')
 
     tkinter.mainloop()
+
+    for i in range(len(include_values)):
+        include_values[i] = include_values[i].get()
 
     return include_values, disable_change
 
@@ -151,7 +155,7 @@ def populateWhereRow(sql_table_name, column_names, script_type):
         var = tkinter.IntVar()
         where_values.append(var)
         b = tkinter.Checkbutton(
-            root, text=column_names[i], variable=where_values[i].get())
+            root, text=column_names[i], variable=where_values[i])
         b.deselect()
         b.place(relx=relx, rely=rely, anchor='center')
         count += 1
@@ -165,6 +169,9 @@ def populateWhereRow(sql_table_name, column_names, script_type):
             relx=0.5, rely=(horizontal_screen_fraction * 12), anchor='center')
 
     tkinter.mainloop()
+
+    for i in range(len(where_values)):
+        where_values[i] = where_values[i].get()
 
     return where_values
 
@@ -340,15 +347,8 @@ def getTemplateInfo():
     :return: List[str], List[str], List[str], List[int], str
     '''
 
-    # TODO:
-    # Set up sql server instance verification
-    # "'reg", "query", '"HKLM\\Software\\Microsoft\\Microsoft SQL Server\\Instance Names\\SQL'
-    # home_dir = subprocess.run(["dir"], text=True, stdout=subprocess.PIPE, input="")
-    # print(type(home_dir))
-    # print(home_dir.stdout)
-
     # gets the name of the SQL instance from user, SQL DB from user, and list of tables in that DB
-    sql_tables, cursor = excel_global.connectToSQLServer()
+    sql_tables, cursor, sql_database_name = excel_global.connectToSQLServer()
 
     description = "Please enter the name of the table you'd like to work with in the " + \
         sql_database_name + " database:"
@@ -356,4 +356,6 @@ def getTemplateInfo():
     sql_table_name = excel_global.createDropDownBox(
         description, label, sql_tables)
 
-    return excel_global.getSQLTableInfo(sql_table_name, cursor), sql_table_name
+    sql_column_names, sql_column_types, column_is_nullable, column_is_identity = excel_global.getSQLTableInfo(sql_table_name, cursor)
+
+    return sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name

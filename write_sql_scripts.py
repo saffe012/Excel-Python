@@ -10,6 +10,7 @@ import re
 import tkinter
 import excel_global
 import validate_workbook as validate
+from tkinter import filedialog as tkFileDialog
 
 
 def displayExcelFormatInstructions():
@@ -231,12 +232,25 @@ def createInsertScripts(table_name, table):
         column_names, column_includes, pre_statement) + ') VALUES ('
 
     # creates script for each row of data in the Excel table
-    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(table)):
+    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(table) - 1):
         values_statement = createValuesClause(
             table, column_types, column_includes, insert_statement, row)
 
         excel_cell = excel_global.getExcelCellToInsertInto(
             len(table[row]), row)
+        script_dict[excel_cell] = values_statement
+
+    all_none = True
+    # look at the last row. Row may be blank and generate. None values. so don't write scripts
+    for i in range(len(table[len(table) - 1])):
+        # if there is one value that isn't None, write scripts
+        if table[len(table) - 1][i].value != None:
+            all_none = False
+    if not all_none:
+        values_statement = createValuesClause(
+            table, column_types, column_includes, insert_statement, len(table) - 1)
+        excel_cell = excel_global.getExcelCellToInsertInto(
+            len(table[len(table) - 1]), len(table) - 1)
         script_dict[excel_cell] = values_statement
 
     return script_dict
@@ -421,7 +435,7 @@ def createSelectScripts(table_name, table):
     return script_dict
 
 
-def writeToExcel(workbook):
+def writeToExcel(workbook, validate_with_sql, write_to):
     '''Iterates through each worksheet in the imported workbook, creates
     scripts for each worksheet, and writes the scripts to a new workbook. Returns
     True if scripts were generated and need to be saved, otherwise False
@@ -431,18 +445,15 @@ def writeToExcel(workbook):
     :return: bool
     '''
 
-    any_changes = False
+    any_changes = ''
 
     for worksheet in workbook.worksheets:
         if worksheet.title != 'configuration':  # skip the configuration sheet in the Excel book
-            validate_with_sql = excel_global.createYesNoBox(
-                'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
             # check if worksheet is is valid and if user wants to write scripts for them
             valid_template = validate.validWorksheet(
                 worksheet, validate_with_sql)
 
             if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
-                any_changes = True  # changes were made and need to be saved
                 script_type = getTypeOfScript(
                     worksheet)  # tkinter dialog box
 
@@ -454,8 +465,31 @@ def writeToExcel(workbook):
                 scripts = writeScripts(
                     all_rows, script_type, table_name)
 
-                # writes script to worksheet
-                for cell, script in scripts.items():
-                    worksheet[cell] = script
+                if write_to == 'Excel':
+                    any_changes = 'Excel'  # changes were made and need to be saved
+                    # writes script to worksheet
+                    for cell, script in scripts.items():
+                        worksheet[cell] = script
+                elif write_to == 'SQL':
+                    any_changes = 'SQL'
+
+                    output_string = "Select/create the filename of the SQL file you'd like to save/write to: "
+                    excel_global.createPopUpBox(
+                        output_string)  # tkinter dialog box
+
+                    file = tkinter.Tk()
+                    # opens file explorer so user can choose file to write to
+                    file.filename = tkFileDialog.asksaveasfilename(
+                        initialdir="C:/", title="Select/create file to save/write to", defaultextension=".sql")
+                    f = open(file.filename, 'w')
+                    for cell, script in scripts.items():
+                        f.write(script + '\n')
+                    f.close()
+                    file.destroy()
+
+                    output_string = "Scripts saved to: '" + \
+                        str(file.filename) + "'"
+                    excel_global.createPopUpBox(
+                        output_string)  # tkinter dialog box
 
     return any_changes

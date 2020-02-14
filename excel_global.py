@@ -22,7 +22,6 @@ def getSQLTableInfo(sql_table_name, cursor):
     return List[str], List[str], List[int], List[int]
     '''
 
-    print(type(cursor))
     cursor.execute("SELECT info.COLUMN_NAME, info.DATA_TYPE, info.IS_NULLABLE, sy.is_identity FROM INFORMATION_SCHEMA.COLUMNS info, sys.columns sy WHERE info.TABLE_NAME = '" +
                    sql_table_name + "' AND sy.object_id = object_id('" + sql_table_name + "') AND sy.name = info.COLUMN_NAME;")
 
@@ -49,9 +48,19 @@ def connectToSQLServer():
     return List[str], pyodbc.cursor
     '''
 
+    computer_name = str(subprocess.run(["hostname.exe"], text=True, stdout=subprocess.PIPE, input="").stdout).upper().split()[0]
+    all_servers = subprocess.run(["sqlcmd", "-L"], text=True, stdout=subprocess.PIPE, input="").stdout.split()[1:]
+    local_servers = []
+
+    for server in all_servers:
+        if computer_name in server:
+            local_servers.append(server)
+
+    # code id sqlcmd does not function on users laptop
+    '''
     sql_server_name = ''
 
-    while sql_server_name == '':
+    while sql_server_name == '': # while user does not enter SQL Server instance
         description = "Please enter the name of the SQL Server where your database is located:"
         label = 'SQL Server name: '
         sql_server_name = createTextEntryBox(
@@ -59,7 +68,11 @@ def connectToSQLServer():
         if sql_server_name == '':
             createPopUpBox(
                 "Please enter a SQL server instance name.")
+    '''
 
+    description = "Please choose the name of the SQL Server where your database is located:"
+    label = 'SQL Server name: '
+    sql_server_name = createDropDownBox(description, label, local_servers)
     # opens connection to specified SQL server and master DB to get list of all dbs on server
     dbs = pyodbc.connect('Driver={SQL Server};'
                          'Server=' + sql_server_name + ';'
@@ -102,7 +115,7 @@ def connectToSQLServer():
     for table in cursor:
         tables.append(table[0])
 
-    return tables, cursor
+    return tables, cursor, sql_database_name
 
 
 def addQuitMenuButton(root):
@@ -143,6 +156,7 @@ def closeProgram():
     button = tkinter.Button(root, text='No', width=15, command=root.destroy).place(
         relx=0.65, rely=0.8, anchor='center')
     tkinter.mainloop()
+
 
 def createYesNoBox(description, label1, label2):
     '''Creates a tkinter pop-up box that gives the user a choice between 2 options
@@ -332,8 +346,8 @@ def createDropDownBox(description, label, data):
     root.title('Excel Python')
     root.geometry("500x500")
 
-    sql_database_name = tkinter.StringVar(root)
-    sql_database_name.set(data[0])  # default value
+    value = tkinter.StringVar(root)
+    value.set(data[0])  # default value
 
     w = tkinter.Label(root, text=description)
     w.pack()
@@ -342,7 +356,7 @@ def createDropDownBox(description, label, data):
     tkinter.Label(root, text=label).place(
         relx=0.4, rely=0.4, anchor='center')
 
-    m = tkinter.OptionMenu(root, sql_database_name, *data)
+    m = tkinter.OptionMenu(root, value, *data)
     m.pack()
     m.place(relx=0.6, rely=0.4, anchor='center')
 
@@ -350,4 +364,4 @@ def createDropDownBox(description, label, data):
         relx=0.5, rely=0.5, anchor='center')
     tkinter.mainloop()
 
-    return sql_database_name.get()
+    return value.get()

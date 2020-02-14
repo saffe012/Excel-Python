@@ -26,7 +26,7 @@ def validateWorksheetSQL(table):
     column_includes = table[cons.INCLUDE_ROW_INDEX]
     column_where = table[cons.WHERE_ROW_INDEX]
 
-    tables, cursor = excel_global.connectToSQLServer()
+    tables, cursor, sql_database_name = excel_global.connectToSQLServer()
     if column_info[0].value == None or column_info[0].value not in tables:
         valid_template = False
         excel_global.createPopUpBox(
