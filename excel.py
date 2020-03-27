@@ -29,16 +29,7 @@ def main():
         write_scripts.displayExcelFormatInstructions()  # tkinter dialog box
 
         output_string = "Choose the Excel workbook you'd like to make scripts for."
-        excel_global.createPopUpBox(output_string)  # tkinter dialog box
-
-        file = tkinter.Tk()
-        # opens file explorer so user can choose file to read from
-        file.filename = tkFileDialog.askopenfilename(
-            initialdir="C:/", title="Select file to write scripts for")
-        file.destroy()
-
-        workbook = openpyxl.load_workbook(
-            filename=file.filename, data_only=True)
+        workbook = excel_global.openExcelFile(output_string)
 
         validate_with_sql = excel_global.createYesNoBox(
             'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
@@ -46,29 +37,15 @@ def main():
         write_to_sql = 'SQL'
         write_to_excel = 'Excel'
         description = 'Would you like to write the sql scripts to a ".sql" file or to an Excel spreadsheet?'
-        write_to = excel_global.createYesNoBox(
+        write_to = excel_global.createYesNoBox(  # write scripts to new SQL or Excel file
             description, write_to_sql, write_to_excel)
 
-        save_file = write_scripts.writeToExcel(workbook, validate_with_sql, write_to)
+        if write_to == 'SQL':
+            save_file = write_scripts.writeToSQL(workbook, validate_with_sql)
+        elif write_to == 'Excel':
+            save_file = write_scripts.writeToExcel(workbook, validate_with_sql)
 
-        if save_file == 'Excel':
-            output_string = "Select/create the filename of Excel workbook you'd like to save/write to: "
-            excel_global.createPopUpBox(
-                output_string)  # tkinter dialog box
-
-            file = tkinter.Tk()
-            # opens file explorer so user can choose file to write to
-            file.filename = tkFileDialog.asksaveasfilename(
-                initialdir="C:/", title="Select/create file to save/write to", defaultextension=".xlsx")
-            # saves new workbook with generated scripts to a user selected file
-            workbook.save(file.filename)
-            file.destroy()
-
-            output_string = "Scripts saved to: '" + \
-                str(file.filename) + "'"
-            excel_global.createPopUpBox(
-                output_string)  # tkinter dialog box
-        elif save_file == '':
+        if save_file == '':  # no scripts were written because there were no valid worksheets
             output_string = "No files were changed. Closing program."
             excel_global.createPopUpBox(
                 output_string)  # tkinter dialog box
@@ -103,58 +80,15 @@ def main():
         template.WriteTemplateToSheet(worksheet, sql_table_name, script_type,
                                       sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
 
-        output_string = "Select/create the filename of Excel workbook you'd like to save/write to: "
-        excel_global.createPopUpBox(output_string)  # tkinter dialog box
-
-        file = tkinter.Tk()
-        # opens file explorer so user can choose file to write to
-        file.filename = tkFileDialog.asksaveasfilename(
-            initialdir="C:/", title="Select/create file to save/write to", defaultextension=".xlsx")
-        # saves new workbook with generated template to a user selected file
-        workbook.save(file.filename)
-        file.destroy()
-
-        output_string = "Excel template saved to: '" + \
-            str(file.filename) + "'"
-        excel_global.createPopUpBox(output_string)  # tkinter dialog box
+        write_scripts.saveToExcel(workbook)
 
     elif program_mode == 'validate':
         write_scripts.displayExcelFormatInstructions()  # tkinter dialog box
 
         output_string = "Choose the Excel workbook you'd like to validate."
-        excel_global.createPopUpBox(output_string)  # tkinter dialog box
+        workbook = excel_global.openExcelFile(output_string)
 
-        file = tkinter.Tk()
-        # opens file explorer so user can choose file to read from
-        file.filename = tkFileDialog.askopenfilename(
-            initialdir="C:/", title="Select file to write scripts for")
-        file.destroy()
-
-        workbook = openpyxl.load_workbook(
-            filename=file.filename, data_only=True)
-
-        validate_with_sql = excel_global.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
-            'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
-
-        any_changes = False # False if all spreadsheets fail validation
-        all_sheets_okay = True # True if all spreadsheets pass validation
-
-        for worksheet in workbook.worksheets:
-            if worksheet.title != 'configuration':  # skip the configuration sheet in the Excel book
-                # check if worksheet is is valid and if user wants to write scripts for them
-                valid_template = validate.validWorksheet(
-                    worksheet, validate_with_sql)
-                all_sheets_okay = all_sheets_okay and valid_template # True if spreadsheet passes validation
-                if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
-                    output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
-                    excel_global.createPopUpBox(
-                        output_string)  # tkinter dialog box
-                    any_changes = True  # changes were made and need to be saved
-
-        if any_changes and not all_sheets_okay:  # some but not all spreadsheets in workbook pass validation
-            output_string = "CAUTION. Care must be taken building scripts with this workbook because not all sheets are in a valid form."
-            excel_global.createPopUpBox(output_string)
-
+        validate.validate(workbook)
 
 '''
     except Exception as e:

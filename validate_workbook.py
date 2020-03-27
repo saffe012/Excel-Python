@@ -227,3 +227,27 @@ def validWorksheet(worksheet, validate_with_sql):
                 'Validation failed. Scripts will not be written for ' + worksheet.title)
 
     return valid_template
+
+
+def validate(workbook):
+    validate_with_sql = excel_global.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
+        'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
+
+    any_changes = False # False if all spreadsheets fail validation
+    all_sheets_okay = True # True if all spreadsheets pass validation
+
+    for worksheet in workbook.worksheets:
+        if worksheet.title != 'configuration':  # skip the configuration sheet in the Excel book
+            # check if worksheet is is valid and if user wants to write scripts for them
+            valid_template = validWorksheet(
+                worksheet, validate_with_sql)
+            all_sheets_okay = all_sheets_okay and valid_template # True if spreadsheet passes validation
+            if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
+                output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
+                excel_global.createPopUpBox(
+                    output_string)  # tkinter dialog box
+                any_changes = True  # changes were made and need to be saved
+
+    if any_changes and not all_sheets_okay:  # some but not all spreadsheets in workbook pass validation
+        output_string = "CAUTION. Care must be taken building scripts with this workbook because not all sheets are in a valid form."
+        excel_global.createPopUpBox(output_string)

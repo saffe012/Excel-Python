@@ -10,6 +10,29 @@ import pyodbc
 import constants as cons
 import subprocess
 import sys
+import tkinter
+from tkinter import filedialog as tkFileDialog
+
+
+def openExcelFile(output_string):
+    '''Opens an existing Excel workbook using openpyxl.
+
+    :param1 output_string: str
+
+    :return: openpyxl.workbook.workbook.Workbook
+    '''
+    createPopUpBox(output_string)  # tkinter dialog box
+
+    file = tkinter.Tk()
+    # opens file explorer so user can choose file to read from
+    file.filename = tkFileDialog.askopenfilename(
+        initialdir="C:/", title="Select file to write scripts for")
+    file.destroy()
+
+    workbook = openpyxl.load_workbook(
+        filename=file.filename, data_only=True)
+
+    return workbook
 
 
 def getSQLTableInfo(sql_table_name, cursor):
@@ -19,7 +42,7 @@ def getSQLTableInfo(sql_table_name, cursor):
     :param1 sql_table_name: str
     :param2 cursor: pyodbc.cursor
 
-    return List[str], List[str], List[int], List[int]
+    :return: List[str], List[str], List[int], List[int]
     '''
 
     cursor.execute("SELECT info.COLUMN_NAME, info.DATA_TYPE, info.IS_NULLABLE, sy.is_identity FROM INFORMATION_SCHEMA.COLUMNS info, sys.columns sy WHERE info.TABLE_NAME = '" +
@@ -45,9 +68,9 @@ def connectToSQLServer():
     '''Connects to an instance of a SQL Server and allows the user to choose a
     database to work with on that instance.
 
-    return List[str], pyodbc.cursor
+    :return: List[str], pyodbc.cursor
     '''
-
+    '''
     computer_name = str(subprocess.run(["hostname.exe"], text=True, stdout=subprocess.PIPE, input="").stdout).upper().split()[0]
     all_servers = subprocess.run(["sqlcmd", "-L"], text=True, stdout=subprocess.PIPE, input="").stdout.split()[1:]
     local_servers = []
@@ -55,7 +78,7 @@ def connectToSQLServer():
     for server in all_servers:
         if computer_name in server:
             local_servers.append(server)
-
+    '''
     # code id sqlcmd does not function on users laptop
     '''
     sql_server_name = ''
@@ -69,13 +92,14 @@ def connectToSQLServer():
             createPopUpBox(
                 "Please enter a SQL server instance name.")
     '''
-
+    '''
     description = "Please choose the name of the SQL Server where your database is located:"
     label = 'SQL Server name: '
     sql_server_name = createDropDownBox(description, label, local_servers)
+    '''
     # opens connection to specified SQL server and master DB to get list of all dbs on server
     dbs = pyodbc.connect('Driver={SQL Server};'
-                         'Server=' + sql_server_name + ';'
+                         'Server=' + 'CHA1WS003746\\MSSQLSERVER2016' + ';'
                          'Database=' + 'master' + ';'
                          'Trusted_Connection=yes;')
 
@@ -99,7 +123,7 @@ def connectToSQLServer():
 
     # opens connection to specified SQL server and database
     conn = pyodbc.connect('Driver={SQL Server};'
-                          'Server=' + sql_server_name + ';'
+                          'Server=' + 'CHA1WS003746\\MSSQLSERVER2016' + ';'
                           'Database=' + sql_database_name + ';'
                           'Trusted_Connection=yes;')
 
