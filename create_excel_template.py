@@ -8,7 +8,6 @@ Matt Saffert
 import constants as cons
 import tkinter
 import excel_global
-import subprocess
 
 
 def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_is_identity, script_type):
@@ -106,14 +105,13 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
     return include_values, disable_change
 
 
-def populateWhereRow(sql_table_name, column_names, script_type):
+def populateWhereRow(sql_table_name, column_names):
     '''Creates tkinter dialogue that asks user to check which columns they'd
     like to include in the WHERE clause of their scripts where script_type
     in (update, select, delete)
 
     :param1 sql_table_name: str
     :param2 column_names: List[str]
-    :param3 script_type: str
 
     :return: List[int]
     '''
@@ -199,20 +197,18 @@ def populateClauses(sql_table_name, sql_column_names, column_is_nullable, column
 
     if script_type in ('select', 'delete', 'update'):  # generate where row
         sql_where_row = populateWhereRow(
-            sql_table_name, sql_column_names, script_type)
+            sql_table_name, sql_column_names)
     else:
         sql_where_row = []
 
     return sql_include_row, sql_where_row, disable_include_change
 
 
-def WriteTemplateToSheet(worksheet, sql_table_name, script_type, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change):
+def WriteTemplateToSheet(worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change):
     '''Based on user input from previous functions, this function will write the
     template to the Excel workbook.
 
     :param1 worksheet: openpyxl.worksheet.worksheet.Worksheet
-    :param2 sql_table_name: str
-    :param3 script_type: str
     :param4 sql_column_names: List[str]
     :param5 sql_column_types: List[str]
     :param6 sql_include_row: List[int]
@@ -221,37 +217,30 @@ def WriteTemplateToSheet(worksheet, sql_table_name, script_type, sql_column_name
 
     :return: NONE
     '''
-
+    #86
+    #3272
     # populates top info row
-    worksheet[excel_global.getExcelCellToInsertInto(
-        0, cons.INFO_ROW)] = sql_table_name
-    worksheet[excel_global.getExcelCellToInsertInto(
-        1, cons.INFO_ROW)] = script_type
+    worksheet.iloc[cons.INFO_ROW][cons.TABLE_NAME] = sql_table_name
+    worksheet.iloc[cons.INFO_ROW][cons.SCRIPT_TYPE] = script_type
 
     # populates next 4 rows in the Excel template with data from column lists
     for i in range(len(sql_column_names)):
-        worksheet[excel_global.getExcelCellToInsertInto(
-            i, cons.COLUMN_NAMES_ROW_INDEX)] = sql_column_names[i]
-        worksheet[excel_global.getExcelCellToInsertInto(
-            i, cons.COLUMN_DATA_TYPE_ROW_INDEX)] = sql_column_types[i]
+        worksheet.iloc[cons.COLUMN_NAMES_ROW_INDEX][i] = sql_column_names[i]
+        worksheet.iloc[cons.COLUMN_DATA_TYPE_ROW_INDEX][i] = sql_column_types[i]
         if len(sql_include_row) > 0:  # only put data in include row if there is data
-            cell = excel_global.getExcelCellToInsertInto(
-                i, cons.INCLUDE_ROW_INDEX)
             if sql_include_row[i] == 1:
-                worksheet[cell] = 'include'
+                worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = 'include'
             # if the cell shouldn't be changed, color it red
             if disable_include_change[i] == 1:
-                excel_global.colorCell(worksheet, cell, cons.RED)
+                worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper()
+                #excel_global.colorCell(worksheet, cell, cons.RED)
         else:  # if script is delete, there should be no include. color it red
-            excel_global.colorCell(worksheet, excel_global.getExcelCellToInsertInto(
-                i, cons.INCLUDE_ROW_INDEX), cons.RED)
+            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper()
         if len(sql_where_row) > 0:  # only put data in where row if there is data
             if sql_where_row[i] == 1:
-                worksheet[excel_global.getExcelCellToInsertInto(
-                    i, cons.WHERE_ROW_INDEX)] = 'where'
+                worksheet.iloc[cons.WHERE_ROW_INDEX][i] = 'where'
         else:  # if script is insert, there should be no where clause. color it red
-            excel_global.colorCell(worksheet, excel_global.getExcelCellToInsertInto(
-                i, cons.WHERE_ROW_INDEX), cons.RED)
+            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper()
 
 
 def getTypeOfScriptFromUser(worksheet_title):

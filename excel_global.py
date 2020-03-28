@@ -21,6 +21,7 @@ def openExcelFile(output_string):
 
     :return: openpyxl.workbook.workbook.Workbook
     '''
+
     createPopUpBox(output_string)  # tkinter dialog box
 
     file = tkinter.Tk()
@@ -28,9 +29,16 @@ def openExcelFile(output_string):
     file.filename = tkFileDialog.askopenfilename(
         initialdir="C:/", title="Select file to write scripts for")
     file.destroy()
+    workbook = pd.read_excel(file.filename, header=None, sheet_name=None)
+    for worksheet in workbook:
+        workbook[worksheet] = workbook[worksheet].rename(index={0:"info"})
+        workbook[worksheet] = workbook[worksheet].rename(index={1:"names"})
+        workbook[worksheet] = workbook[worksheet].rename(index={2:"types"})
+        workbook[worksheet] = workbook[worksheet].rename(index={3:"include"})
+        workbook[worksheet] = workbook[worksheet].rename(index={4:"where"})
+        for i in range(5,len(workbook[worksheet])):
+            workbook[worksheet] = workbook[worksheet].rename(index={i:(i-5)})
 
-    workbook = openpyxl.load_workbook(
-        filename=file.filename, data_only=True)
 
     return workbook
 
@@ -236,7 +244,8 @@ def getExcelCellToInsertInto(column, row):
 
     :return: str
     '''
-
+    #86
+    #3272
     # column is retrieved by finding the key of the LETTER_INDEX_DICT that the value(index) belongs to.
     excel_column = list(cons.LETTER_INDEX_DICT.keys())[list(
         cons.LETTER_INDEX_DICT.values()).index(column)]
@@ -244,7 +253,7 @@ def getExcelCellToInsertInto(column, row):
     # excel coordinate cell that script should be inserted into
     excel_cell = excel_column + excel_row
 
-    return excel_cell
+    return row
 
 
 def getProgramMode():

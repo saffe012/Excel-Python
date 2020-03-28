@@ -4,15 +4,13 @@ Matt Saffert
 12-31-2019
 '''
 
-import openpyxl
-import tkinter
-from tkinter import filedialog as tkFileDialog
 import create_excel_template as template
 import write_sql_scripts as write_scripts
 import validate_workbook as validate
 import excel_global
 import sys
 import os
+import pandas as pd
 
 
 def main():
@@ -51,34 +49,29 @@ def main():
                 output_string)  # tkinter dialog box
 
     elif program_mode == 'template':
-        # creates new workbook to write template to
-        workbook = openpyxl.Workbook()
-        worksheet = workbook.active
-
         template_type = template.getTemplateType()
-
+        #TODO: Test making template from sql
         if template_type == 'from_table':  # generates an Excel template from a SQL database
             sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name = template.getTemplateInfo()  # tkinter dialog boxes
-
-            worksheet.title = sql_table_name
+            workbook = {sql_table_name: pd.DataFrame()}
+            worksheet = workbook[sql_table_name]
 
             # allows user to select the type of script this template is for
             script_type = template.getTypeOfScriptFromUser(
-                worksheet.title).get()  # tkinter dialog box
+                sql_table_name).get()  # tkinter dialog box
 
             # asks user which elements from the imported table they'd like to include in their scripts
             sql_include_row, sql_where_row, disable_include_change = template.populateClauses(
                 sql_table_name, sql_column_names, column_is_nullable, column_is_identity, script_type)  # tkinter dialog boxes
+
+            # writes the generated template to the new Excel workbook
+            template.WriteTemplateToSheet(worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
         elif template_type == 'generic':  # generates a generic template with default table data
-            sql_table_name, script_type, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change = template.generateGenericTemplate(
-                worksheet)
-            worksheet.title = sql_table_name
+            generic_data = cons.GENERIC_TEMPLATE # dictionary filled with generic data to build template
+            worksheet = pd.DataFrame(data=generic_data)
+            workbook = {'IOChannels': worksheet}
         else:
             excel_global.closeProgram()
-
-        # writes the generated template to the new Excel workbook
-        template.WriteTemplateToSheet(worksheet, sql_table_name, script_type,
-                                      sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
 
         write_scripts.saveToExcel(workbook)
 

@@ -4,6 +4,8 @@ Matt Saffert
 12-31-2019
 '''
 
+import numpy as np
+
 '''
 SQL Server String data types
 '''
@@ -21,6 +23,10 @@ SQL_STRING_TYPE = [
     'varbinary',
     'image'
 ]
+
+GENERIC_TEMPLATE = {'col1': ['IOChannels', 'Id', 'int', 'include', 'where'],
+                    'col2': ['insert', 'IOServersId', 'int', np.NaN, 'where'],
+                    'col3': [np.NaN, 'Name', 'varchar(50)', 'include', np.NaN]}
 
 '''
 SQL Server Numeric data types
@@ -77,6 +83,12 @@ COLUMN_DATA_TYPE_ROW_INDEX = 2
 INCLUDE_ROW_INDEX = 3
 WHERE_ROW_INDEX = 4
 START_OF_DATA_ROWS_INDEX = 5
+
+'''
+Info row indexes
+'''
+TABLE_NAME = 0
+SCRIPT_TYPE = 1
 
 '''
 Types of scripts generatable by this program
