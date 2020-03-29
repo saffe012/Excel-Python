@@ -1,20 +1,27 @@
 # Excel-Python
-A program written in Python to build SQL scripts from data in an Excel spreadsheet on a Windows machine.
+A program written in Python to build SQL scripts from data in an Excel spreadsheet.
 
 ## Prerequisites
 
-Openpyxl is a Python library to read/write Excel 2010 xlsx/xlsm/xltx/xltm files.
+Pandas is an open source data analysis and manipulation tool for Python.
 
-Install openpyxl using pip. It is advisable to do this in a Python virtualenv without system packages:
+In this program pandas is used to retrieve, store, and use the data from the Excel spreadsheet
 
 ```bash
-pip install openpyxl
+pip install pandas
 ```
 <br/>
 
-A SQL Server can be used in this program in order to get SQL table info to build a template from which data can be entered and scripts be made. SQL Server is only necessary if you would like to build a template from an existing table. If a user desires, they may use the example.xlsx included in this repository in order to manually build an Excel spreadsheet to be used by the script building mode of this program.
+Tkinter is a Python GUI library.
 
-If you would like to use the template building mode of this program, pyodbc software must be installed.
+```bash
+pip install tkinter
+```
+<br/>
+
+A SQL Server can be used in this program in order to get SQL table info to build a template from which data can be entered and scripts be made. SQL Server is only necessary if you would like to build a template from an existing table or verify their Excel workbook using a SQL database. If a user desires, they may use the example.xlsx included in this repository in order to manually build an Excel spreadsheet to be used by the script building mode of this program. Workbooks may also be generically checked to test their validity with this program.
+
+If you would like to use the template building using SQL mode of this program, pyodbc software must be installed.
 
 Pyodbc is a Python DB API 2 module for ODBC. 
 
@@ -24,6 +31,15 @@ Install pyodbc using pip:
 pip install pyodbc
 ```
 
+Numpy is a python library for scientific computing. 
+
+It is used minimally in this program but is essential for the program's functionality.
+
+```bash
+pip install numpy
+```
+<br/>
+
 ## Usage
 
 To start the program open the excel.py file using python.
@@ -32,9 +48,9 @@ To start the program open the excel.py file using python.
 python excel.py
 ```
 
-The program has two main run modes. In order to generate scripts from an excel file using this program, the Excel file you're reading from has to contain certain information and be formatted in a certain way. One of the functions of this program allows the user to create an Excel template in which they can deposit their data to the be used to write scripts (the other mode of the program). 
+The program has three main run modes. In order to generate scripts from an excel file using this program, the Excel file you're reading from has to contain certain information and be formatted in a certain way. One of the functions of this program allows the user to create an Excel template in which they can deposit their data to the be used to write scripts (one of the other modes of the program). 
 
-Upon starting the Excel Python program the user will be prompted to choose whether they'd like to "Build Excel template" or "Write SQL scripts". 
+Upon starting the Excel Python program the user will be prompted to choose whether they'd like to "Build Excel template", "Write SQL scripts", or "Check if workbook is valid for writing scripts". 
 
 #### Build Excel template
 
