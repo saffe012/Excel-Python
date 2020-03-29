@@ -50,7 +50,7 @@ def main():
 
     elif program_mode == 'template':
         template_type = template.getTemplateType()
-        #TODO: Test making template from sql
+        # TODO: Test making template from sql
         if template_type == 'from_table':  # generates an Excel template from a SQL database
             sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name = template.getTemplateInfo()  # tkinter dialog boxes
             workbook = {sql_table_name: pd.DataFrame()}
@@ -65,9 +65,11 @@ def main():
                 sql_table_name, sql_column_names, column_is_nullable, column_is_identity, script_type)  # tkinter dialog boxes
 
             # writes the generated template to the new Excel workbook
-            template.WriteTemplateToSheet(worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
+            template.WriteTemplateToSheet(
+                worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
         elif template_type == 'generic':  # generates a generic template with default table data
-            generic_data = cons.GENERIC_TEMPLATE # dictionary filled with generic data to build template
+            # dictionary filled with generic data to build template
+            generic_data = cons.GENERIC_TEMPLATE
             worksheet = pd.DataFrame(data=generic_data)
             workbook = {'IOChannels': worksheet}
         else:
@@ -82,6 +84,7 @@ def main():
         workbook = excel_global.openExcelFile(output_string)
 
         validate.validate(workbook)
+
 
 '''
     except Exception as e:

@@ -208,17 +208,16 @@ def WriteTemplateToSheet(worksheet, sql_column_names, sql_column_types, sql_incl
     '''Based on user input from previous functions, this function will write the
     template to the Excel workbook.
 
-    :param1 worksheet: openpyxl.worksheet.worksheet.Worksheet
-    :param4 sql_column_names: List[str]
-    :param5 sql_column_types: List[str]
-    :param6 sql_include_row: List[int]
-    :param7 sql_where_row: List[int]
-    :param8 disable_include_change: List[int]
+    :param1 worksheet: pandas.core.frame.DataFrame
+    :param2 sql_column_names: List[str]
+    :param3 sql_column_types: List[str]
+    :param4 sql_include_row: List[int]
+    :param5 sql_where_row: List[int]
+    :param6 disable_include_change: List[int]
 
     :return: NONE
     '''
-    #86
-    #3272
+
     # populates top info row
     worksheet.iloc[cons.INFO_ROW][cons.TABLE_NAME] = sql_table_name
     worksheet.iloc[cons.INFO_ROW][cons.SCRIPT_TYPE] = script_type
@@ -232,20 +231,24 @@ def WriteTemplateToSheet(worksheet, sql_column_names, sql_column_types, sql_incl
                 worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = 'include'
             # if the cell shouldn't be changed, color it red
             if disable_include_change[i] == 1:
-                worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper()
-                #excel_global.colorCell(worksheet, cell, cons.RED)
+                worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper(
+                )
         else:  # if script is delete, there should be no include. color it red
-            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper()
+            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper(
+            )
         if len(sql_where_row) > 0:  # only put data in where row if there is data
             if sql_where_row[i] == 1:
                 worksheet.iloc[cons.WHERE_ROW_INDEX][i] = 'where'
         else:  # if script is insert, there should be no where clause. color it red
-            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper()
+            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper(
+            )
 
 
 def getTypeOfScriptFromUser(worksheet_title):
     '''Creates a tkinter dialog box that asks the user to choose the type of scripts
     they are trying to generate
+
+    :param1 worksheet_title: str
 
     :return: instance
     '''
@@ -307,28 +310,6 @@ def getTemplateType():
     return template_type.get()
 
 
-def generateGenericTemplate(worksheet):
-    '''Based on user input from previous functions, this function will write the
-    template to the Excel workbook.
-
-    :param1 worksheet: openpyxl.worksheet.worksheet.Worksheet
-
-    :return: str, str, List[str], List[str], List[int], List[int], List[int]
-    '''
-
-    sql_table_name = "IOChannels"
-    script_type = 'insert'
-    sql_column_names = ['Id', 'IOServersId', 'Name', 'HealthStatusAddressId',
-                        'IsHealthStatusAddress', 'SimulateIO', 'IsConnected']
-    sql_column_types = ['int', 'int',
-                        'varchar(50)', 'int', 'bit', 'bit', 'bit']
-    sql_include_row = [1, 1, 1, 1, 1, 1, 1]
-    sql_where_row = [0, 0, 1, 0, 0, 0, 1]
-    disable_include_change = [1, 0, 0, 0, 0, 0, 0]
-
-    return sql_table_name, script_type, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change
-
-
 def getTemplateInfo():
     '''Creates a series of tkinter dialogues that asks user to info about the
     template they are trying to create.
@@ -345,6 +326,7 @@ def getTemplateInfo():
     sql_table_name = excel_global.createDropDownBox(
         description, label, sql_tables)
 
-    sql_column_names, sql_column_types, column_is_nullable, column_is_identity = excel_global.getSQLTableInfo(sql_table_name, cursor)
+    sql_column_names, sql_column_types, column_is_nullable, column_is_identity = excel_global.getSQLTableInfo(
+        sql_table_name, cursor)
 
     return sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name

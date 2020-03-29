@@ -70,11 +70,6 @@ SQL_OTHER_TYPE = [
 ]
 
 '''
-Excel color constants
-'''
-RED = 'FFFF0000'
-
-'''
 Excel row indexes
 '''
 INFO_ROW = 0

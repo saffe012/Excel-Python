@@ -15,14 +15,13 @@ def validateWorksheetSQL(worksheet):
     '''Validates the data in the passed in worksheet based on a SQL table from an
     open SQL connection.
 
-    :param1 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: bool
     '''
 
     valid_template = True
 
-    #3272
 
     tables, cursor, sql_database_name = excel_global.connectToSQLServer()
     if worksheet.loc['info'][0] == None or worksheet.loc['info'][0] not in tables:
@@ -95,14 +94,13 @@ def validateWorksheetSQL(worksheet):
 def validateWorksheetGeneric(worksheet):
     '''Validates the data in the passed in worksheet based on a generic SQL table.
 
-    :param1 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: bool
     '''
 
     valid_template = True
 
-    #3272
     if pd.isnull(worksheet.loc['info'][0]):
         valid_template = False
         excel_global.createPopUpBox(
@@ -146,15 +144,13 @@ def validateData(worksheet):
     '''Validates the data in the passed in worksheet. The data comes from the 6th
     row and on in an Excel spreadsheet
 
-    :param1 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: bool
     '''
 
     valid_template = True
 
-    #3272
-    #
     for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
         for i in range(len(worksheet.loc['info'])):
             if pd.isnull(worksheet.iloc[row][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
@@ -179,13 +175,12 @@ def validWorksheet(worksheet, validate_with_sql, title):
     '''Calls the correct function to validate the passed worksheet based on
     whether a user wants to connect to SQL or not.
 
-    :param1 worksheet: openpyxl.worksheet.worksheet.Worksheet
+    :param1 worksheet: pandas.core.frame.DataFrame
     :param2 validate_with_sql: str
+    :param3 title: str
 
     :return: bool
     '''
-
-    #3272
 
     description = "Would you like to validate/create scripts for " + \
         title + " worksheet?"
@@ -215,7 +210,12 @@ def validWorksheet(worksheet, validate_with_sql, title):
 
 
 def validate(workbook):
-    #3272
+    '''Cycles through worksheets in a workbook checking if they're valid.
+    Alerts the user if any or all worksheets are invalid.
+
+    :param1 workbook: dict
+    '''
+
     validate_with_sql = excel_global.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 

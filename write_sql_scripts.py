@@ -44,8 +44,7 @@ def isValueTypeString(type):
     row in the excel spreadsheet. Returns true id type needs parenthesis around it
     in the script
 
-    :param1 types: list
-    :param2 column: int
+    :param1 type: str
 
     :return: bool
     '''
@@ -67,13 +66,11 @@ def shouldInclude(value):
     '''Checks whether a column of data should be included in the SQL script based on
     the include row of the excel spreadsheet.
 
-    :param1 includes: list
-    :param2 column: int
+    :param1 value: str
 
     :return: bool
     '''
 
-    #3272
     include = str(value)
     if include == 'include':
         return True
@@ -84,13 +81,11 @@ def includeInWhereClause(value):
     '''Checks whether a column of data should be included in the where clause of the
     generated SQL script based on the where row of the excel spreadsheet.
 
-    :param1 where: list
-    :param2 column: int
+    :param1 value: str
 
     :return: bool
     '''
 
-    #3272
     wheres = str(value)
     if wheres == 'where':
         return True
@@ -101,11 +96,11 @@ def writeScripts(worksheet):
     '''Checks the desired type of SQL script to be generated and calls the corresponding
     function the generate scripts.
 
-    :param1 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: dict
     '''
-    #3272
+
     scripts = {}
     script_type = worksheet.loc['info'][cons.SCRIPT_TYPE]
 
@@ -125,20 +120,19 @@ def createColumnClause(worksheet, statement):
     '''Helper function to createInsertScripts() that creates the list of column
     names to insert/select for the SQL script for each row of the excel spreadsheet
 
-    :param1 column_names: list
-    :param2 column_includes: list
-    :param3 statement: str
+    :param1 worksheet: pandas.core.frame.DataFrame
+    :param2 statement: str
 
     :return: str
     '''
 
-    #3272
     # concatenates each included value of each column to the return string
     for i in range(len(worksheet.loc['names']) - 1):
         if shouldInclude(worksheet.loc['include'][i]):
             statement = ''.join(
                 [statement, (str(worksheet.loc['names'][i]) + ', ')])
-    if shouldInclude(worksheet.loc['include'][len(worksheet.loc['names']) - 1]):  # checks last column
+    # checks last column
+    if shouldInclude(worksheet.loc['include'][len(worksheet.loc['names']) - 1]):
         statement = ''.join(
             [statement, (str(worksheet.loc['names'][len(worksheet.loc['names']) - 1]))])
     else:
@@ -152,16 +146,13 @@ def createValuesClause(worksheet, statement, row):
     '''Helper function to createInsertScripts() that creates the VALUES clause of
     the SQL script for each row of the excel spreadsheet
 
-    :param1 worksheet: tuple
-    :param2 column_types: list
-    :param3 column_includes: list
-    :param4 statement: str
-    :param5 row: int
+    :param1 worksheet: pandas.core.frame.DataFrame
+    :param2 statement: str
+    :param3 row: int
 
     :return: str
     '''
 
-    #3272
     # concatenates each included value of each column to the return string
     for cell in range(len(worksheet.iloc[row]) - 1):
         if shouldInclude(worksheet.loc['include'][cell]):
@@ -174,7 +165,8 @@ def createValuesClause(worksheet, statement, row):
                     [statement, (str(worksheet.iloc[row][cell]) + ", ")])
     # checks last column
     if shouldInclude(worksheet.loc['include'][len(worksheet.iloc[row]) - 1]):
-        string = isValueTypeString(worksheet.loc['types'][len(worksheet.iloc[row]) - 1])
+        string = isValueTypeString(
+            worksheet.loc['types'][len(worksheet.iloc[row]) - 1])
         if string:  # add quotes
             statement = ''.join(
                 [statement, ("'" + str(worksheet.iloc[row][len(worksheet.iloc[row]) - 1]) + "');")])
@@ -191,15 +183,15 @@ def createValuesClause(worksheet, statement, row):
 def createInsertScripts(worksheet):
     '''Creates the insert scripts based on the data provided in the Excel spreadsheet.
 
-    :param1 table_name: str
+    :param1 table_name: pandas.core.frame.DataFrame
     :param2 worksheet: tuple
 
     :return: dict
     '''
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'INSERT INTO... ;'}
-    #3272
-    pre_statement = 'INSERT INTO ' + worksheet.loc['info'][cons.TABLE_NAME] + ' ('
+    pre_statement = 'INSERT INTO ' + \
+        worksheet.loc['info'][cons.TABLE_NAME] + ' ('
 
     insert_statement = createColumnClause(
         worksheet, pre_statement) + ') VALUES ('
@@ -233,14 +225,13 @@ def createUpdateClause(worksheet, statement, row):
     '''Helper function to createUpdateScripts() that creates the UPDATE clause of the
     SQL script for each row of the excel spreadsheet
 
-    :param1 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
     :param5 statement: str
     :param6 row: int
 
     :return: str
     '''
 
-    #3272
     # concatenates each included value of each column to the return string
     for cell in range(len(worksheet.iloc[row]) - 1):
         if shouldInclude(worksheet.loc['include'][cell]):
@@ -257,7 +248,8 @@ def createUpdateClause(worksheet, statement, row):
     if shouldInclude(worksheet.loc['include'][len(worksheet.iloc[row]) - 1]):
         statement = ''.join(
             [statement, (str(worksheet.loc['names'][len(worksheet.loc['names']) - 1]) + ' = ')])
-        string = isValueTypeString(worksheet.loc['types'][len(worksheet.loc['names']) - 1])
+        string = isValueTypeString(
+            worksheet.loc['types'][len(worksheet.loc['names']) - 1])
         if string:  # add quotes
             statement = ''.join(
                 [statement, ("'" + str(worksheet.iloc[row][len(worksheet.iloc[row]) - 1]) + "' WHERE ")])
@@ -275,14 +267,13 @@ def createWhereClause(worksheet, statement, row):
     '''Helper function to createUpdateScripts() that creates the WHERE clause of the
     SQL script for each row of the excel spreadsheet
 
-    :param1 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
     :param5 statement: str
     :param6 row: int
 
     :return: str
     '''
 
-    #3272
     # concatenates each where value of each column to the return string
     for i in range(len(worksheet.iloc[row]) - 1):
         if includeInWhereClause(worksheet.loc['where'][i]):
@@ -295,10 +286,12 @@ def createWhereClause(worksheet, statement, row):
             else:
                 statement = ''.join(
                     [statement, (str(worksheet.iloc[row][i]) + "  AND  ")])
-    if includeInWhereClause(worksheet.loc['where'][len(worksheet.loc['names']) - 1]):  # checks last column
+    # checks last column
+    if includeInWhereClause(worksheet.loc['where'][len(worksheet.loc['names']) - 1]):
         statement = ''.join(
             [statement, (str(worksheet.loc['names'][len(worksheet.loc['names']) - 1]) + ' = ')])
-        string = isValueTypeString(worksheet.loc['types'][len(worksheet.loc['names']) - 1])
+        string = isValueTypeString(
+            worksheet.loc['types'][len(worksheet.loc['names']) - 1])
         if string:  # add quotes
             statement = ''.join(
                 [statement, ("'" + str(worksheet.iloc[row][len(worksheet.iloc[row]) - 1]) + "';")])
@@ -315,16 +308,14 @@ def createWhereClause(worksheet, statement, row):
 def createUpdateScripts(worksheet):
     '''Creates the update scripts based on the data provided in the Excel spreadsheet.
 
-    :param1 table_name: str
-    :param2 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: dict
     '''
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'UPDATE... ;'}
-
-    #3272
-    pre_statement = 'UPDATE ' + worksheet.loc['info'][cons.TABLE_NAME] + ' SET '
+    pre_statement = 'UPDATE ' + \
+        worksheet.loc['info'][cons.TABLE_NAME] + ' SET '
 
     # creates script for each row of data in the Excel table
     for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet)):
@@ -344,16 +335,14 @@ def createUpdateScripts(worksheet):
 def createDeleteScripts(worksheet):
     '''Creates the delete scripts based on the data provided in the Excel spreadsheet.
 
-    :param1 table_name: str
-    :param2 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: dict
     '''
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'DELETE... ;'}
-
-    #3272
-    pre_statement = 'DELETE FROM ' + worksheet.loc['info'][cons.TABLE_NAME] + ' WHERE '
+    pre_statement = 'DELETE FROM ' + \
+        worksheet.loc['info'][cons.TABLE_NAME] + ' WHERE '
 
     # creates script for each row of data in the Excel table
     for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet)):
@@ -370,15 +359,12 @@ def createDeleteScripts(worksheet):
 def createSelectScripts(worksheet):
     '''Creates the select scripts based on the data provided in the Excel spreadsheet.
 
-    :param1 table_name: str
-    :param2 worksheet: tuple
+    :param1 worksheet: pandas.core.frame.DataFrame
 
     :return: dict
     '''
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'INSERT INTO... ;'}
-
-    #3272
     pre_statement = 'SELECT ('
 
     select_statement = createColumnClause(
@@ -399,7 +385,7 @@ def createSelectScripts(worksheet):
 def saveToExcel(workbook):
     '''Saves the workbook to an Excel file.
 
-    :param1 workbook: openpyxl.workbook.workbook.Workbook
+    :param1 workbook: dict
     '''
     output_string = "Select/create the filename of Excel workbook you'd like to save/write to: "
     excel_global.createPopUpBox(
@@ -412,7 +398,8 @@ def saveToExcel(workbook):
     # saves new workbook with generated scripts to a user selected file
     with pd.ExcelWriter(file.filename) as writer:
         for worksheet in workbook:
-            workbook[worksheet].to_excel(writer, sheet_name=worksheet, header=False, index=False)
+            workbook[worksheet].to_excel(
+                writer, sheet_name=worksheet, header=False, index=False)
     file.destroy()
 
     output_string = "Scripts saved to: '" + \
@@ -426,7 +413,7 @@ def writeToExcel(workbook, validate_with_sql):
     scripts for each worksheet, and writes the scripts to a new workbook. Returns
     True if scripts were generated and need to be saved, otherwise False
 
-    :param1 workbook: openpyxl.workbook.workbook.Workbook
+    :param1 workbook: dict
     :param2 validate_with_sql: str
 
     :return: bool
@@ -435,7 +422,6 @@ def writeToExcel(workbook, validate_with_sql):
     any_changes = ''
     valid_template = True
 
-    #3272
     for worksheet in workbook:
         valid_template = validate.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
@@ -447,7 +433,7 @@ def writeToExcel(workbook, validate_with_sql):
 
             any_changes = 'Excel'  # changes were made and need to be saved
             # writes script to worksheet
-            df_scripts = ['','Scripts','','','']
+            df_scripts = ['', 'Scripts', '', '', '']
             for cell, script in scripts.items():
                 df_scripts.append(script)
             workbook[worksheet]['scripts'] = df_scripts
@@ -484,7 +470,7 @@ def writeToSQL(workbook, validate_with_sql):
     scripts for each worksheet, and writes the scripts to a SQL file. Returns
     True if scripts were generated and have been saved, otherwise False
 
-    :param1 workbook: openpyxl.workbook.workbook.Workbook
+    :param1 workbook: dict
     :param2 validate_with_sql: str
 
     :return: bool
@@ -494,7 +480,6 @@ def writeToSQL(workbook, validate_with_sql):
     text_file = ''
     valid_template = True
 
-    #3272
     for worksheet in workbook:
         valid_template = validate.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)

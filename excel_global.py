@@ -4,22 +4,21 @@ Matt Saffert
 1-9-2020
 '''
 
-import openpyxl
 import tkinter
 import pyodbc
 import constants as cons
 import subprocess
 import sys
-import tkinter
 from tkinter import filedialog as tkFileDialog
+import pandas as pd
 
 
 def openExcelFile(output_string):
-    '''Opens an existing Excel workbook using openpyxl.
+    '''Opens an existing Excel workbook using pandas.
 
     :param1 output_string: str
 
-    :return: openpyxl.workbook.workbook.Workbook
+    :return: dict
     '''
 
     createPopUpBox(output_string)  # tkinter dialog box
@@ -31,14 +30,14 @@ def openExcelFile(output_string):
     file.destroy()
     workbook = pd.read_excel(file.filename, header=None, sheet_name=None)
     for worksheet in workbook:
-        workbook[worksheet] = workbook[worksheet].rename(index={0:"info"})
-        workbook[worksheet] = workbook[worksheet].rename(index={1:"names"})
-        workbook[worksheet] = workbook[worksheet].rename(index={2:"types"})
-        workbook[worksheet] = workbook[worksheet].rename(index={3:"include"})
-        workbook[worksheet] = workbook[worksheet].rename(index={4:"where"})
-        for i in range(5,len(workbook[worksheet])):
-            workbook[worksheet] = workbook[worksheet].rename(index={i:(i-5)})
-
+        workbook[worksheet] = workbook[worksheet].rename(index={0: "info"})
+        workbook[worksheet] = workbook[worksheet].rename(index={1: "names"})
+        workbook[worksheet] = workbook[worksheet].rename(index={2: "types"})
+        workbook[worksheet] = workbook[worksheet].rename(index={3: "include"})
+        workbook[worksheet] = workbook[worksheet].rename(index={4: "where"})
+        for i in range(5, len(workbook[worksheet])):
+            workbook[worksheet] = workbook[worksheet].rename(index={
+                                                             i: (i - 5)})
 
     return workbook
 
@@ -154,7 +153,6 @@ def addQuitMenuButton(root):
     '''Adds quiting capability to a tkinter box both as menu option and the "X"
     in upper right hand corner of box
 
-
     :param1 root: tkinter
 
     :return: NONE
@@ -221,21 +219,6 @@ def createYesNoBox(description, label1, label2):
     return program_mode.get()
 
 
-def colorCell(worksheet, cell, color):
-    '''Colors a cell of the Excel worksheet the passed in color
-
-    :param1 worksheet: openpyxl.worksheet.worksheet.Worksheet
-    :param2 cell: str
-    :param3 color: str
-
-    :return: NONE
-    '''
-
-    fill = openpyxl.styles.PatternFill(
-        fill_type='solid', start_color=color, end_color=color)
-    worksheet[cell].fill = fill
-
-
 def getExcelCellToInsertInto(column, row):
     '''Gets the column and row of the excel spreadsheet that the script should be inserted into.
 
@@ -244,8 +227,7 @@ def getExcelCellToInsertInto(column, row):
 
     :return: str
     '''
-    #86
-    #3272
+
     # column is retrieved by finding the key of the LETTER_INDEX_DICT that the value(index) belongs to.
     excel_column = list(cons.LETTER_INDEX_DICT.keys())[list(
         cons.LETTER_INDEX_DICT.values()).index(column)]
@@ -253,7 +235,7 @@ def getExcelCellToInsertInto(column, row):
     # excel coordinate cell that script should be inserted into
     excel_cell = excel_column + excel_row
 
-    return row
+    return excel_cell
 
 
 def getProgramMode():
@@ -291,8 +273,6 @@ def createPopUpBox(output_string):
     to acknowledge info/close window
 
     :param1 output_string: str
-
-    :return: NONE
     '''
 
     root = tkinter.Tk()
@@ -315,8 +295,6 @@ def createErrorBox(output_string):
     to acknowledge error/close window
 
     :param1 output_string: str
-
-    :return: NONE
     '''
 
     root = tkinter.Tk()
