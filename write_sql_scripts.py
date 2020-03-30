@@ -5,7 +5,7 @@ Matt Saffert
 1-9-2020
 '''
 
-import constants as cons
+from excel_constants import *
 import re
 import tkinter
 import excel_global
@@ -54,7 +54,7 @@ def isValueTypeString(type):
     type = re.sub("[\(\[].*?[\)\]]", "", str(type))
 
     # decides whether the value of this type needs parenthesis around it in script
-    if (type in cons.SQL_STRING_TYPE) or (type in cons.SQL_DATETIME_TYPE) or (type in cons.SQL_OTHER_TYPE):
+    if (type in SQL_STRING_TYPE) or (type in SQL_DATETIME_TYPE) or (type in SQL_OTHER_TYPE):
         return True
     elif type == 'bit':  # bit can be represented by both 1/0 integers, or 'True'/'False' strings. This program uses strings
         return True
@@ -102,7 +102,7 @@ def writeScripts(worksheet):
     '''
 
     scripts = {}
-    script_type = worksheet.loc['info'][cons.SCRIPT_TYPE]
+    script_type = worksheet.loc['info'][SCRIPT_TYPE]
 
     if script_type == 'insert':
         scripts = createInsertScripts(worksheet)
@@ -191,13 +191,13 @@ def createInsertScripts(worksheet):
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'INSERT INTO... ;'}
     pre_statement = 'INSERT INTO ' + \
-        worksheet.loc['info'][cons.TABLE_NAME] + ' ('
+        worksheet.loc['info'][TABLE_NAME] + ' ('
 
     insert_statement = createColumnClause(
         worksheet, pre_statement) + ') VALUES ('
 
     # creates script for each row of data in the Excel table
-    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
+    for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
         values_statement = createValuesClause(
             worksheet, insert_statement, row)
 
@@ -315,10 +315,10 @@ def createUpdateScripts(worksheet):
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'UPDATE... ;'}
     pre_statement = 'UPDATE ' + \
-        worksheet.loc['info'][cons.TABLE_NAME] + ' SET '
+        worksheet.loc['info'][TABLE_NAME] + ' SET '
 
     # creates script for each row of data in the Excel table
-    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet)):
+    for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet)):
         update_statement = createUpdateClause(
             worksheet, pre_statement, row)
 
@@ -342,10 +342,10 @@ def createDeleteScripts(worksheet):
 
     script_dict = {}  # {cell: script}. ex. {'G7': 'DELETE... ;'}
     pre_statement = 'DELETE FROM ' + \
-        worksheet.loc['info'][cons.TABLE_NAME] + ' WHERE '
+        worksheet.loc['info'][TABLE_NAME] + ' WHERE '
 
     # creates script for each row of data in the Excel table
-    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet)):
+    for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet)):
         where_statement = createWhereClause(
             worksheet, pre_statement, row)
 
@@ -368,10 +368,10 @@ def createSelectScripts(worksheet):
     pre_statement = 'SELECT ('
 
     select_statement = createColumnClause(
-        worksheet, pre_statement) + ') FROM ' + worksheet.loc['info'][cons.TABLE_NAME] + ' WHERE '
+        worksheet, pre_statement) + ') FROM ' + worksheet.loc['info'][TABLE_NAME] + ' WHERE '
 
     # creates script for each row of data in the Excel table
-    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet)):
+    for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet)):
         where_statement = createWhereClause(
             worksheet, select_statement, row)
 

@@ -11,6 +11,7 @@ import excel_global
 import sys
 import os
 import pandas as pd
+from excel_constants import *
 
 
 def main():
@@ -69,7 +70,7 @@ def main():
                 worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
         elif template_type == 'generic':  # generates a generic template with default table data
             # dictionary filled with generic data to build template
-            generic_data = cons.GENERIC_TEMPLATE
+            generic_data = GENERIC_TEMPLATE
             worksheet = pd.DataFrame(data=generic_data)
             workbook = {'IOChannels': worksheet}
         else:

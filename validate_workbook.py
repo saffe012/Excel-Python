@@ -6,7 +6,7 @@ Matt Saffert
 '''
 
 import excel_global
-import constants as cons
+from excel_constants import *
 import re
 import pandas as pd
 
@@ -32,7 +32,7 @@ def validateWorksheetSQL(worksheet):
             'Cannot continue SQL validation.')
         return valid_template
 
-    if worksheet.loc['info'][1] not in cons.TYPE_OF_SCRIPTS_AVAILABLE:
+    if worksheet.loc['info'][1] not in TYPE_OF_SCRIPTS_AVAILABLE:
         valid_template = False
         excel_global.createPopUpBox(
             'You have not specified a valid script type in cell "B1"')
@@ -44,28 +44,28 @@ def validateWorksheetSQL(worksheet):
         if (worksheet.loc['names'][i] == None or worksheet.loc['names'][i] not in sql_column_names) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
             valid_template = False
             excel_global.createPopUpBox(
-                'You have not entered a column name where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, cons.COLUMN_NAMES_ROW_INDEX))
+                'You have not entered a column name where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, COLUMN_NAMES_ROW_INDEX))
 
     for i in range(len(worksheet.loc['types'])):
         type = re.sub("[\(\[].*?[\)\]]", "", str(worksheet.loc['types'][i]))
-        if type not in cons.SQL_STRING_TYPE and type not in cons.SQL_NUMERIC_TYPE and type not in cons.SQL_DATETIME_TYPE and type not in cons.SQL_OTHER_TYPE:
+        if type not in SQL_STRING_TYPE and type not in SQL_NUMERIC_TYPE and type not in SQL_DATETIME_TYPE and type not in SQL_OTHER_TYPE:
             if (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
                 valid_template = False
                 excel_global.createPopUpBox(
-                    'You have not entered a supported SQL type where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, cons.COLUMN_DATA_TYPE_ROW_INDEX))
+                    'You have not entered a supported SQL type where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, COLUMN_DATA_TYPE_ROW_INDEX))
         column_name = worksheet.loc['names'][i]
         if column_name in sql_column_names:
             sql_name_index = sql_column_names.index(column_name)
             if type != sql_column_types[sql_name_index]:
                 valid_template = False
                 excel_global.createPopUpBox(
-                    'The type in your spreadsheet for ' + column_name + ', does not match the type of the column in SQL in cell ' + excel_global.getExcelCellToInsertInto(i, cons.COLUMN_DATA_TYPE_ROW_INDEX))
+                    'The type in your spreadsheet for ' + column_name + ', does not match the type of the column in SQL in cell ' + excel_global.getExcelCellToInsertInto(i, COLUMN_DATA_TYPE_ROW_INDEX))
 
     for i in range(len(worksheet.loc['include'])):
         if worksheet.loc['include'][i] != None and worksheet.loc['include'][i] != 'include':
             valid_template = False
             excel_global.createPopUpBox(
-                'You have not entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, cons.INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
+                'You have not entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
         if worksheet.loc['info'][1] != 'delete':
             if column_is_identity[i] == 0:
                 # if script type is insert, and column cannot be null then automatically select
@@ -73,20 +73,20 @@ def validateWorksheetSQL(worksheet):
                     if worksheet.loc['include'][i] != 'include':
                         valid_template = False
                         excel_global.createPopUpBox(
-                            'You have entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, cons.INCLUDE_ROW_INDEX) + '. This column must be included')
+                            'You have entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. This column must be included')
             else:  # column is identity column so cannot be updated or inserted into.
                 # insert/update on identity column is NOT allowed
                 if worksheet.loc['info'][1] != 'select':
                     if worksheet.loc['include'][i] == 'include':
                         valid_template = False
                         excel_global.createPopUpBox(
-                            'You have entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, cons.INCLUDE_ROW_INDEX) + '. This column cannot be included')
+                            'You have entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. This column cannot be included')
 
     for i in range(len(worksheet.loc['where'])):
         if worksheet.loc['where'][i] != None and worksheet.loc['where'][i] != 'where':
             valid_template = False
             excel_global.createPopUpBox(
-                'You have not entered an invalid string in a cell in cell ' + excel_global.getExcelCellToInsertInto(i, cons.WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
+                'You have not entered an invalid string in a cell in cell ' + excel_global.getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
 
     return validateData(worksheet) and valid_template
 
@@ -105,7 +105,7 @@ def validateWorksheetGeneric(worksheet):
         valid_template = False
         excel_global.createPopUpBox(
             'You have not specified a SQL table name in cell "A1"')
-    if worksheet.loc['info'][1] not in cons.TYPE_OF_SCRIPTS_AVAILABLE:
+    if worksheet.loc['info'][1] not in TYPE_OF_SCRIPTS_AVAILABLE:
         valid_template = False
         excel_global.createPopUpBox(
             'You have not specified a valid script type in cell "B1"')
@@ -114,28 +114,28 @@ def validateWorksheetGeneric(worksheet):
         if pd.isnull(worksheet.loc['names'][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
             valid_template = False
             excel_global.createPopUpBox(
-                'You have not entered a column name where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, cons.COLUMN_NAMES_ROW_INDEX))
+                'You have not entered a column name where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, COLUMN_NAMES_ROW_INDEX))
 
     for i in range(len(worksheet.loc['types'])):
         type = re.sub("[\(\[].*?[\)\]]", "",
                       str(worksheet.loc['types'][i]))
-        if type not in cons.SQL_STRING_TYPE and type not in cons.SQL_NUMERIC_TYPE and type not in cons.SQL_DATETIME_TYPE and type not in cons.SQL_OTHER_TYPE:
+        if type not in SQL_STRING_TYPE and type not in SQL_NUMERIC_TYPE and type not in SQL_DATETIME_TYPE and type not in SQL_OTHER_TYPE:
             if (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
                 valid_template = False
                 excel_global.createPopUpBox(
-                    'You have not entered a supported SQL type where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, cons.COLUMN_DATA_TYPE_ROW_INDEX))
+                    'You have not entered a supported SQL type where one is required in cell ' + excel_global.getExcelCellToInsertInto(i, COLUMN_DATA_TYPE_ROW_INDEX))
 
     for i in range(len(worksheet.loc['include'])):
         if not (pd.isnull(worksheet.loc['include'][i])) and worksheet.loc['include'][i] != 'include':
             valid_template = False
             excel_global.createPopUpBox(
-                'You have not entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, cons.INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
+                'You have not entered an invalid string in cell ' + excel_global.getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
 
     for i in range(len(worksheet.loc['where'])):
         if not (pd.isnull(worksheet.loc['where'][i])) and worksheet.loc['where'][i] != 'where':
             valid_template = False
             excel_global.createPopUpBox(
-                'You have not entered an invalid string in a cell in cell ' + excel_global.getExcelCellToInsertInto(i, cons.WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
+                'You have not entered an invalid string in a cell in cell ' + excel_global.getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
 
     return validateData(worksheet) and valid_template
 
@@ -151,7 +151,7 @@ def validateData(worksheet):
 
     valid_template = True
 
-    for row in range(cons.START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
+    for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
         for i in range(len(worksheet.loc['info'])):
             if pd.isnull(worksheet.iloc[row][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
                 valid_template = False

@@ -6,7 +6,7 @@ Matt Saffert
 
 import tkinter
 import pyodbc
-import constants as cons
+from excel_constants import *
 import subprocess
 import sys
 from tkinter import filedialog as tkFileDialog
@@ -229,8 +229,8 @@ def getExcelCellToInsertInto(column, row):
     '''
 
     # column is retrieved by finding the key of the LETTER_INDEX_DICT that the value(index) belongs to.
-    excel_column = list(cons.LETTER_INDEX_DICT.keys())[list(
-        cons.LETTER_INDEX_DICT.values()).index(column)]
+    excel_column = list(LETTER_INDEX_DICT.keys())[list(
+        LETTER_INDEX_DICT.values()).index(column)]
     excel_row = str(row + 1)
     # excel coordinate cell that script should be inserted into
     excel_cell = excel_column + excel_row

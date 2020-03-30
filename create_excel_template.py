@@ -5,9 +5,9 @@ Matt Saffert
 1-9-2020
 '''
 
-import constants as cons
+import excel_constants as cons
 import tkinter
-import excel_global
+from excel_constants import *
 
 
 def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_is_identity, script_type):
@@ -219,28 +219,28 @@ def WriteTemplateToSheet(worksheet, sql_column_names, sql_column_types, sql_incl
     '''
 
     # populates top info row
-    worksheet.iloc[cons.INFO_ROW][cons.TABLE_NAME] = sql_table_name
-    worksheet.iloc[cons.INFO_ROW][cons.SCRIPT_TYPE] = script_type
+    worksheet.iloc[INFO_ROW][TABLE_NAME] = sql_table_name
+    worksheet.iloc[INFO_ROW][SCRIPT_TYPE] = script_type
 
     # populates next 4 rows in the Excel template with data from column lists
     for i in range(len(sql_column_names)):
-        worksheet.iloc[cons.COLUMN_NAMES_ROW_INDEX][i] = sql_column_names[i]
-        worksheet.iloc[cons.COLUMN_DATA_TYPE_ROW_INDEX][i] = sql_column_types[i]
+        worksheet.iloc[COLUMN_NAMES_ROW_INDEX][i] = sql_column_names[i]
+        worksheet.iloc[COLUMN_DATA_TYPE_ROW_INDEX][i] = sql_column_types[i]
         if len(sql_include_row) > 0:  # only put data in include row if there is data
             if sql_include_row[i] == 1:
-                worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = 'include'
+                worksheet.iloc[INCLUDE_ROW_INDEX][i] = 'include'
             # if the cell shouldn't be changed, color it red
             if disable_include_change[i] == 1:
-                worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper(
+                worksheet.iloc[INCLUDE_ROW_INDEX][i] = worksheet.iloc[INCLUDE_ROW_INDEX][i].upper(
                 )
         else:  # if script is delete, there should be no include. color it red
-            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper(
+            worksheet.iloc[INCLUDE_ROW_INDEX][i] = worksheet.iloc[INCLUDE_ROW_INDEX][i].upper(
             )
         if len(sql_where_row) > 0:  # only put data in where row if there is data
             if sql_where_row[i] == 1:
-                worksheet.iloc[cons.WHERE_ROW_INDEX][i] = 'where'
+                worksheet.iloc[WHERE_ROW_INDEX][i] = 'where'
         else:  # if script is insert, there should be no where clause. color it red
-            worksheet.iloc[cons.INCLUDE_ROW_INDEX][i] = worksheet.iloc[cons.INCLUDE_ROW_INDEX][i].upper(
+            worksheet.iloc[INCLUDE_ROW_INDEX][i] = worksheet.iloc[INCLUDE_ROW_INDEX][i].upper(
             )
 
 
