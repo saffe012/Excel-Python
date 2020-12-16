@@ -11,6 +11,7 @@ import tkinter
 import excel_global
 from tkinter import filedialog as tkFileDialog
 import pandas as pd
+import global_gui as gui
 
 
 def writeMode():
@@ -19,18 +20,18 @@ def writeMode():
     :return: NONE
     '''
 
-    excel_global.displayExcelFormatInstructions()  # tkinter dialog box
+    gui.displayExcelFormatInstructions()  # tkinter dialog box
 
     output_string = "Choose the Excel workbook you'd like to make scripts for."
-    workbook = excel_global.openExcelFile(output_string)
+    workbook = gui.openExcelFile(output_string)
 
-    validate_with_sql = excel_global.createYesNoBox(
+    validate_with_sql = gui.createYesNoBox(
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
     write_to_sql = 'SQL'
     write_to_excel = 'Excel'
     description = 'Would you like to write the sql scripts to a ".sql" file or to an Excel spreadsheet?'
-    write_to = excel_global.createYesNoBox(  # write scripts to new SQL or Excel file
+    write_to = gui.createYesNoBox(  # write scripts to new SQL or Excel file
         description, write_to_sql, write_to_excel)
 
     if write_to == 'SQL':
@@ -40,7 +41,7 @@ def writeMode():
 
     if save_file == '':  # no scripts were written because there were no valid worksheets
         output_string = "No files were changed. Closing program."
-        excel_global.createPopUpBox(
+        gui.createPopUpBox(
             output_string)  # tkinter dialog box
 
 
@@ -418,7 +419,7 @@ def writeToExcel(workbook, validate_with_sql):
             workbook[worksheet]['scripts'] = df_scripts
     #
     if valid_template:
-        excel_global.saveToExcel(workbook)
+        gui.saveToExcel(workbook)
 
     return any_changes
 
@@ -440,7 +441,7 @@ def saveToSQL(text_file):
 
     output_string = "Scripts saved to: '" + \
         str(file.filename) + "'"
-    excel_global.createPopUpBox(
+    gui.createPopUpBox(
         output_string)  # tkinter dialog box
 
 

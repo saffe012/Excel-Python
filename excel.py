@@ -7,7 +7,7 @@ Matt Saffert
 import create_excel_template as template
 import write_sql_scripts as write_scripts
 import validate_workbook as validate
-import excel_global
+import global_gui as gui
 import sys
 import os
 from excel_constants import *
@@ -21,7 +21,7 @@ def main():
 
     # try:
     # gets the mode of the program that the user would like to use
-    program_mode = excel_global.getProgramMode()
+    program_mode = gui.getProgramMode()
 
     if program_mode == 'scripts':
         write_scripts.writeMode()
@@ -35,7 +35,7 @@ def main():
 
 '''
     except Exception as e:
-        excel_global.createErrorBox(repr(e))
+        gui.createErrorBox(repr(e))
         print(repr(e))
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

@@ -6,6 +6,7 @@ Matt Saffert
 '''
 
 import excel_global
+import global_gui as gui
 
 
 def validationMode():
@@ -14,10 +15,10 @@ def validationMode():
     :return: NONE
     '''
 
-    excel_global.displayExcelFormatInstructions()  # tkinter dialog box
+    gui.displayExcelFormatInstructions()  # tkinter dialog box
 
     output_string = "Choose the Excel workbook you'd like to validate."
-    workbook = excel_global.openExcelFile(output_string)
+    workbook = gui.openExcelFile(output_string)
 
     validate(workbook)
 
@@ -29,7 +30,7 @@ def validate(workbook):
     :param1 workbook: dict
     '''
 
-    validate_with_sql = excel_global.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
+    validate_with_sql = gui.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
     any_changes = False # False if all spreadsheets fail validation
@@ -42,10 +43,10 @@ def validate(workbook):
         all_sheets_okay = valid_template # True if spreadsheet passes validation
         if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
             output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
-            excel_global.createPopUpBox(
+            gui.createPopUpBox(
                 output_string)  # tkinter dialog box
             any_changes = True  # changes were made and need to be saved
 
     if any_changes and not all_sheets_okay:  # some but not all spreadsheets in workbook pass validation
         output_string = "CAUTION. Care must be taken building scripts with this workbook because not all sheets are in a valid form."
-        excel_global.createPopUpBox(output_string)
+        gui.createPopUpBox(output_string)

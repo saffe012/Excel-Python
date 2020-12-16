@@ -9,6 +9,7 @@ import excel_global
 import tkinter
 import pandas as pd
 from excel_constants import *
+import global_gui as gui
 
 
 def templateMode():
@@ -41,9 +42,9 @@ def templateMode():
         worksheet = pd.DataFrame(data=generic_data)
         workbook = {'IOChannels': worksheet}
     else:
-        excel_global.closeProgram()
+        gui.closeProgram()
 
-    excel_global.saveToExcel(workbook)
+    gui.saveToExcel(workbook)
 
 
 def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_is_identity, script_type):
@@ -62,7 +63,7 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
     include_values = []
     disable_change = []
     root = tkinter.Tk()
-    excel_global.addQuitMenuButton(root)
+    gui.addQuitMenuButton(root)
     root.title('Excel Python')
     if len(column_names) < 10:
         horizontal_sections = float(len(column_names) + 3)
@@ -154,7 +155,7 @@ def populateWhereRow(sql_table_name, column_names):
 
     where_values = []
     root = tkinter.Tk()
-    excel_global.addQuitMenuButton(root)
+    gui.addQuitMenuButton(root)
     root.title('Excel Python')
 
     if len(column_names) < 10:
@@ -290,7 +291,7 @@ def getTypeOfScriptFromUser(worksheet_title):
     '''
 
     root = tkinter.Tk()
-    excel_global.addQuitMenuButton(root)
+    gui.addQuitMenuButton(root)
     root.title('Excel Python')
     root.geometry("500x500")
     script_type = tkinter.StringVar()
@@ -322,7 +323,7 @@ def getTemplateType():
     '''
 
     root = tkinter.Tk()
-    excel_global.addQuitMenuButton(root)
+    gui.addQuitMenuButton(root)
     root.title('Excel Python')
     root.geometry("500x500")
     template_type = tkinter.StringVar()
@@ -359,7 +360,7 @@ def getTemplateInfo():
     description = "Please enter the name of the table you'd like to work with in the " + \
         sql_database_name + " database:"
     label = 'SQL table name: '
-    sql_table_name = excel_global.createDropDownBox(
+    sql_table_name = gui.createDropDownBox(
         description, label, sql_tables)
 
     sql_column_names, sql_column_types, column_is_nullable, column_is_identity = excel_global.getSQLTableInfo(
