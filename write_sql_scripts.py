@@ -9,34 +9,39 @@ from excel_constants import *
 import re
 import tkinter
 import excel_global
-import validate_workbook as validate
 from tkinter import filedialog as tkFileDialog
 import pandas as pd
 
 
-def displayExcelFormatInstructions():
-    '''Creates a tkinter pop-up box that explains the formatting of the excel
-    spreadsheet that will be read into the program
+def writeMode():
+    '''Starts the writing script mode of the application.
 
     :return: NONE
     '''
 
-    root = tkinter.Tk()
-    excel_global.addQuitMenuButton(root)
-    root.title('Excel Python')
-    root.geometry("600x500")
-    w = tkinter.Label(root, text='Please make sure the excel spreadsheet that '
-                      'will be read was made with the tool and/or is formatted '
-                      'correctly:\nRow 1: col1: SQL tablename col2: script type\nRow 2: SQL column '
-                      'names\nRow 3: SQL data types\nRow 4: put "include" in '
-                      'cells you want to be inserted/updated\nRow 5: put "where" '
-                      'in cells you want to be included in delete/update where '
-                      'clause. (For inserts, leave blank)\nRow 6: Start of data')
-    w.pack()
-    w.place(relx=0.5, rely=0.2, anchor='center')
-    button = tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
-        relx=0.5, rely=0.5, anchor='center')
-    root.mainloop()
+    excel_global.displayExcelFormatInstructions()  # tkinter dialog box
+
+    output_string = "Choose the Excel workbook you'd like to make scripts for."
+    workbook = excel_global.openExcelFile(output_string)
+
+    validate_with_sql = excel_global.createYesNoBox(
+        'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
+
+    write_to_sql = 'SQL'
+    write_to_excel = 'Excel'
+    description = 'Would you like to write the sql scripts to a ".sql" file or to an Excel spreadsheet?'
+    write_to = excel_global.createYesNoBox(  # write scripts to new SQL or Excel file
+        description, write_to_sql, write_to_excel)
+
+    if write_to == 'SQL':
+        save_file = writeToSQL(workbook, validate_with_sql)
+    elif write_to == 'Excel':
+        save_file = writeToExcel(workbook, validate_with_sql)
+
+    if save_file == '':  # no scripts were written because there were no valid worksheets
+        output_string = "No files were changed. Closing program."
+        excel_global.createPopUpBox(
+            output_string)  # tkinter dialog box
 
 
 def isValueTypeString(type):
@@ -382,32 +387,6 @@ def createSelectScripts(worksheet):
     return script_dict
 
 
-def saveToExcel(workbook):
-    '''Saves the workbook to an Excel file.
-
-    :param1 workbook: dict
-    '''
-    output_string = "Select/create the filename of Excel workbook you'd like to save/write to: "
-    excel_global.createPopUpBox(
-        output_string)  # tkinter dialog box
-
-    file = tkinter.Tk()
-    # opens file explorer so user can choose file to write to
-    file.filename = tkFileDialog.asksaveasfilename(
-        initialdir="C:/", title="Select/create file to save/write to", defaultextension=".xlsx")
-    # saves new workbook with generated scripts to a user selected file
-    with pd.ExcelWriter(file.filename) as writer:
-        for worksheet in workbook:
-            workbook[worksheet].to_excel(
-                writer, sheet_name=worksheet, header=False, index=False)
-    file.destroy()
-
-    output_string = "Scripts saved to: '" + \
-        str(file.filename) + "'"
-    excel_global.createPopUpBox(
-        output_string)  # tkinter dialog box
-
-
 def writeToExcel(workbook, validate_with_sql):
     '''Iterates through each worksheet in the imported workbook, creates
     scripts for each worksheet, and writes the scripts to a new workbook. Returns
@@ -423,7 +402,7 @@ def writeToExcel(workbook, validate_with_sql):
     valid_template = True
 
     for worksheet in workbook:
-        valid_template = validate.validWorksheet(
+        valid_template = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
 
         if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
@@ -439,7 +418,7 @@ def writeToExcel(workbook, validate_with_sql):
             workbook[worksheet]['scripts'] = df_scripts
     #
     if valid_template:
-        saveToExcel(workbook)
+        excel_global.saveToExcel(workbook)
 
     return any_changes
 
@@ -481,7 +460,7 @@ def writeToSQL(workbook, validate_with_sql):
     valid_template = True
 
     for worksheet in workbook:
-        valid_template = validate.validWorksheet(
+        valid_template = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
         if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
 

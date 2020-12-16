@@ -6,8 +6,45 @@ Matt Saffert
 '''
 
 import excel_constants as cons
+import excel_global
 import tkinter
+import pandas as pd
 from excel_constants import *
+
+
+def templateMode():
+    '''Starts the template generation mode of the application.
+
+    :return: NONE
+    '''
+
+    template_type = getTemplateType()
+    # TODO: Test making template from sql
+    if template_type == 'from_table':  # generates an Excel template from a SQL database
+        sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name = getTemplateInfo()  # tkinter dialog boxes
+        workbook = {sql_table_name: pd.DataFrame()}
+        worksheet = workbook[sql_table_name]
+
+        # allows user to select the type of script this template is for
+        script_type = getTypeOfScriptFromUser(
+            sql_table_name).get()  # tkinter dialog box
+
+        # asks user which elements from the imported table they'd like to include in their scripts
+        sql_include_row, sql_where_row, disable_include_change = populateClauses(
+            sql_table_name, sql_column_names, column_is_nullable, column_is_identity, script_type)  # tkinter dialog boxes
+
+        # writes the generated template to the new Excel workbook
+        WriteTemplateToSheet(
+            worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
+    elif template_type == 'generic':  # generates a generic template with default table data
+        # dictionary filled with generic data to build template
+        generic_data = GENERIC_TEMPLATE
+        worksheet = pd.DataFrame(data=generic_data)
+        workbook = {'IOChannels': worksheet}
+    else:
+        excel_global.closeProgram()
+
+    excel_global.saveToExcel(workbook)
 
 
 def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_is_identity, script_type):

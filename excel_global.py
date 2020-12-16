@@ -6,11 +6,261 @@ Matt Saffert
 
 import tkinter
 import pyodbc
+import re
 from excel_constants import *
 import subprocess
 import sys
 from tkinter import filedialog as tkFileDialog
 import pandas as pd
+
+
+def validateData(worksheet):
+    '''Validates the data in the passed in worksheet. The data comes from the 6th
+    row and on in an Excel spreadsheet
+
+    :param1 worksheet: pandas.core.frame.DataFrame
+
+    :return: bool
+    '''
+
+    valid_template = True
+
+    for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
+        for i in range(len(worksheet.loc['info'])):
+            if pd.isnull(worksheet.iloc[row][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
+                valid_template = False
+                createPopUpBox(
+                    'You have not entered a value in cell ' + getExcelCellToInsertInto(i, row) + ' where one is required')
+    blank_last_row = True
+    for i in range(len(worksheet.iloc[len(worksheet) - 1])):
+        if not (pd.isnull(worksheet.iloc[len(worksheet) - 1][i])):
+            blank_last_row = False
+    if not blank_last_row:
+        for i in range(len(worksheet.iloc[len(worksheet) - 1])):
+            if pd.isnull(worksheet.iloc[len(worksheet) - 1][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
+                valid_template = False
+                createPopUpBox(
+                    'You have not entered a value in cell ' + getExcelCellToInsertInto(i, len(worksheet) - 1) + ' where one is required')
+
+    return valid_template
+
+
+def validateWorksheetSQL(worksheet):
+    '''Validates the data in the passed in worksheet based on a SQL table from an
+    open SQL connection.
+
+    :param1 worksheet: pandas.core.frame.DataFrame
+
+    :return: bool
+    '''
+
+    valid_template = True
+
+
+    tables, cursor, sql_database_name = connectToSQLServer()
+    if worksheet.loc['info'][0] == None or worksheet.loc['info'][0] not in tables:
+        valid_template = False
+        createPopUpBox(
+            'You have not specified a valid SQL table name in cell "A1"')
+        createPopUpBox(
+            'Cannot continue SQL validation.')
+        return valid_template
+
+    if worksheet.loc['info'][1] not in TYPE_OF_SCRIPTS_AVAILABLE:
+        valid_template = False
+        createPopUpBox(
+            'You have not specified a valid script type in cell "B1"')
+
+    sql_column_names, sql_column_types, column_is_nullable, column_is_identity = getSQLTableInfo(
+        worksheet.loc['info'][0], cursor)
+
+    for i in range(len(worksheet.loc['names'])):
+        if (worksheet.loc['names'][i] == None or worksheet.loc['names'][i] not in sql_column_names) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
+            valid_template = False
+            createPopUpBox(
+                'You have not entered a column name where one is required in cell ' + getExcelCellToInsertInto(i, COLUMN_NAMES_ROW_INDEX))
+
+    for i in range(len(worksheet.loc['types'])):
+        type = re.sub("[\(\[].*?[\)\]]", "", str(worksheet.loc['types'][i]))
+        if type not in SQL_STRING_TYPE and type not in SQL_NUMERIC_TYPE and type not in SQL_DATETIME_TYPE and type not in SQL_OTHER_TYPE:
+            if (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
+                valid_template = False
+                createPopUpBox(
+                    'You have not entered a supported SQL type where one is required in cell ' + getExcelCellToInsertInto(i, COLUMN_DATA_TYPE_ROW_INDEX))
+        column_name = worksheet.loc['names'][i]
+        if column_name in sql_column_names:
+            sql_name_index = sql_column_names.index(column_name)
+            if type != sql_column_types[sql_name_index]:
+                valid_template = False
+                createPopUpBox(
+                    'The type in your spreadsheet for ' + column_name + ', does not match the type of the column in SQL in cell ' + getExcelCellToInsertInto(i, COLUMN_DATA_TYPE_ROW_INDEX))
+
+    for i in range(len(worksheet.loc['include'])):
+        if worksheet.loc['include'][i] != None and worksheet.loc['include'][i] != 'include':
+            valid_template = False
+            createPopUpBox(
+                'You have not entered an invalid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
+        if worksheet.loc['info'][1] != 'delete':
+            if column_is_identity[i] == 0:
+                # if script type is insert, and column cannot be null then automatically select
+                if column_is_nullable[i] == 'NO' and worksheet.loc['info'][1] not in ('select', 'update'):
+                    if worksheet.loc['include'][i] != 'include':
+                        valid_template = False
+                        createPopUpBox(
+                            'You have entered an invalid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. This column must be included')
+            else:  # column is identity column so cannot be updated or inserted into.
+                # insert/update on identity column is NOT allowed
+                if worksheet.loc['info'][1] != 'select':
+                    if worksheet.loc['include'][i] == 'include':
+                        valid_template = False
+                        createPopUpBox(
+                            'You have entered an invalid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. This column cannot be included')
+
+    for i in range(len(worksheet.loc['where'])):
+        if worksheet.loc['where'][i] != None and worksheet.loc['where'][i] != 'where':
+            valid_template = False
+            createPopUpBox(
+                'You have not entered an invalid string in a cell in cell ' + getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
+
+    return validateData(worksheet) and valid_template
+
+
+def validateWorksheetGeneric(worksheet):
+    '''Validates the data in the passed in worksheet based on a generic SQL table.
+
+    :param1 worksheet: pandas.core.frame.DataFrame
+
+    :return: bool
+    '''
+
+    valid_template = True
+
+    if pd.isnull(worksheet.loc['info'][0]):
+        valid_template = False
+        createPopUpBox(
+            'You have not specified a SQL table name in cell "A1"')
+    if worksheet.loc['info'][1] not in TYPE_OF_SCRIPTS_AVAILABLE:
+        valid_template = False
+        createPopUpBox(
+            'You have not specified a valid script type in cell "B1"')
+
+    for i in range(len(worksheet.loc['names'])):
+        if pd.isnull(worksheet.loc['names'][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
+            valid_template = False
+            createPopUpBox(
+                'You have not entered a column name where one is required in cell ' + getExcelCellToInsertInto(i, COLUMN_NAMES_ROW_INDEX))
+
+    for i in range(len(worksheet.loc['types'])):
+        type = re.sub("[\(\[].*?[\)\]]", "",
+                      str(worksheet.loc['types'][i]))
+        if type not in SQL_STRING_TYPE and type not in SQL_NUMERIC_TYPE and type not in SQL_DATETIME_TYPE and type not in SQL_OTHER_TYPE:
+            if (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
+                valid_template = False
+                createPopUpBox(
+                    'You have not entered a supported SQL type where one is required in cell ' + getExcelCellToInsertInto(i, COLUMN_DATA_TYPE_ROW_INDEX))
+
+    for i in range(len(worksheet.loc['include'])):
+        if not (pd.isnull(worksheet.loc['include'][i])) and worksheet.loc['include'][i] != 'include':
+            valid_template = False
+            createPopUpBox(
+                'You have not entered an invalid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
+
+    for i in range(len(worksheet.loc['where'])):
+        if not (pd.isnull(worksheet.loc['where'][i])) and worksheet.loc['where'][i] != 'where':
+            valid_template = False
+            createPopUpBox(
+                'You have not entered an invalid string in a cell in cell ' + getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
+
+    return validateData(worksheet) and valid_template
+
+
+def validWorksheet(worksheet, validate_with_sql, title):
+    '''Calls the correct function to validate the passed worksheet based on
+    whether a user wants to connect to SQL or not.
+
+    :param1 worksheet: pandas.core.frame.DataFrame
+    :param2 validate_with_sql: str
+    :param3 title: str
+
+    :return: bool
+    '''
+
+    description = "Would you like to validate/create scripts for " + \
+        title + " worksheet?"
+    yes = "Yes"
+    no = "No"
+    write_script_for = createYesNoBox(
+        description, yes, no)
+
+    valid_template = True
+    if validate_with_sql == 'Generic':
+        if write_script_for == yes:  # if the user says to write scripts for this sheet
+            valid_template = validateWorksheetGeneric(worksheet) and valid_template
+        else:
+            valid_template = False
+            createPopUpBox(
+                'Validation failed. Scripts will not be written for ' + title)
+
+    elif validate_with_sql == 'SQL':
+        if write_script_for == yes:  # if the user says to write scripts for this sheet
+            valid_template = validateWorksheetSQL(worksheet) and valid_template
+        else:
+            valid_template = False
+            createPopUpBox(
+                'Validation failed. Scripts will not be written for ' + title)
+
+    return valid_template
+
+
+def displayExcelFormatInstructions():
+    '''Creates a tkinter pop-up box that explains the formatting of the excel
+    spreadsheet that will be read into the program
+
+    :return: NONE
+    '''
+
+    root = tkinter.Tk()
+    addQuitMenuButton(root)
+    root.title('Excel Python')
+    root.geometry("600x500")
+    w = tkinter.Label(root, text='Please make sure the excel spreadsheet that '
+                      'will be read was made with the tool and/or is formatted '
+                      'correctly:\nRow 1: col1: SQL tablename col2: script type\nRow 2: SQL column '
+                      'names\nRow 3: SQL data types\nRow 4: put "include" in '
+                      'cells you want to be inserted/updated\nRow 5: put "where" '
+                      'in cells you want to be included in delete/update where '
+                      'clause. (For inserts, leave blank)\nRow 6: Start of data')
+    w.pack()
+    w.place(relx=0.5, rely=0.2, anchor='center')
+    button = tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
+        relx=0.5, rely=0.5, anchor='center')
+    root.mainloop()
+
+
+def saveToExcel(workbook):
+    '''Saves the workbook to an Excel file.
+
+    :param1 workbook: dict
+    '''
+    output_string = "Select/create the filename of Excel workbook you'd like to save/write to: "
+    createPopUpBox(
+        output_string)  # tkinter dialog box
+
+    file = tkinter.Tk()
+    # opens file explorer so user can choose file to write to
+    file.filename = tkFileDialog.asksaveasfilename(
+        initialdir="C:/", title="Select/create file to save/write to", defaultextension=".xlsx")
+    # saves new workbook with generated scripts to a user selected file
+    with pd.ExcelWriter(file.filename) as writer:
+        for worksheet in workbook:
+            workbook[worksheet].to_excel(
+                writer, sheet_name=worksheet, header=False, index=False)
+    file.destroy()
+
+    output_string = "Scripts saved to: '" + \
+        str(file.filename) + "'"
+    createPopUpBox(
+        output_string)  # tkinter dialog box
 
 
 def openExcelFile(output_string):
@@ -265,7 +515,7 @@ def getProgramMode():
         relx=0.5, rely=0.6, anchor='center')
     tkinter.mainloop()
 
-    return program_mode
+    return program_mode.get()
 
 
 def createPopUpBox(output_string):
