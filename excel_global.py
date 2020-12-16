@@ -55,7 +55,6 @@ def validateWorksheetSQL(worksheet):
 
     valid_template = True
 
-
     tables, cursor, sql_database_name = connectToSQLServer()
     if worksheet.loc['info'][0] == None or worksheet.loc['info'][0] not in tables:
         valid_template = False
@@ -194,7 +193,8 @@ def validWorksheet(worksheet, validate_with_sql, title):
     valid_template = True
     if validate_with_sql == 'Generic':
         if write_script_for == yes:  # if the user says to write scripts for this sheet
-            valid_template = validateWorksheetGeneric(worksheet) and valid_template
+            valid_template = validateWorksheetGeneric(
+                worksheet) and valid_template
         else:
             valid_template = False
             gui.createPopUpBox(

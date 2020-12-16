@@ -33,14 +33,14 @@ def validate(workbook):
     validate_with_sql = gui.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
-    any_changes = False # False if all spreadsheets fail validation
-    all_sheets_okay = True # True if all spreadsheets pass validation
+    any_changes = False  # False if all spreadsheets fail validation
+    all_sheets_okay = True  # True if all spreadsheets pass validation
 
     for worksheet in workbook:
         # check if worksheet is is valid and if user wants to write scripts for them
         valid_template = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
-        all_sheets_okay = valid_template # True if spreadsheet passes validation
+        all_sheets_okay = valid_template  # True if spreadsheet passes validation
         if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
             output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
             gui.createPopUpBox(
