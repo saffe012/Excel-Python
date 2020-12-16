@@ -399,6 +399,25 @@ def connectToSQLServer():
     return tables, cursor, sql_database_name
 
 
+def getExcelCellToInsertInto(column, row):
+    '''Gets the column and row of the excel spreadsheet that the script should be inserted into.
+
+    :param1 column: int
+    :param2 row: int
+
+    :return: str
+    '''
+
+    # column is retrieved by finding the key of the LETTER_INDEX_DICT that the value(index) belongs to.
+    excel_column = list(LETTER_INDEX_DICT.keys())[list(
+        LETTER_INDEX_DICT.values()).index(column)]
+    excel_row = str(row + 1)
+    # excel coordinate cell that script should be inserted into
+    excel_cell = excel_column + excel_row
+
+    return excel_cell
+
+
 def addQuitMenuButton(root):
     '''Adds quiting capability to a tkinter box both as menu option and the "X"
     in upper right hand corner of box
@@ -467,25 +486,6 @@ def createYesNoBox(description, label1, label2):
     tkinter.mainloop()
 
     return program_mode.get()
-
-
-def getExcelCellToInsertInto(column, row):
-    '''Gets the column and row of the excel spreadsheet that the script should be inserted into.
-
-    :param1 column: int
-    :param2 row: int
-
-    :return: str
-    '''
-
-    # column is retrieved by finding the key of the LETTER_INDEX_DICT that the value(index) belongs to.
-    excel_column = list(LETTER_INDEX_DICT.keys())[list(
-        LETTER_INDEX_DICT.values()).index(column)]
-    excel_row = str(row + 1)
-    # excel coordinate cell that script should be inserted into
-    excel_cell = excel_column + excel_row
-
-    return excel_cell
 
 
 def getProgramMode():

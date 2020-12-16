@@ -5,7 +5,6 @@ Matt Saffert
 1-9-2020
 '''
 
-import excel_constants as cons
 import excel_global
 import tkinter
 import pandas as pd
