@@ -10,43 +10,61 @@ import global_gui as gui
 
 
 def validationMode():
-    '''Starts the validation mode of the application.
+    '''Runs through the validation mode of the application.
 
     :return: NONE
     '''
 
     gui.displayExcelFormatInstructions()  # tkinter dialog box
 
-    output_string = "Choose the Excel workbook you'd like to validate."
-    workbook = gui.openExcelFile(output_string)
-
-    validate(workbook)
-
-
-def validate(workbook):
-    '''Cycles through worksheets in a workbook checking if they're valid.
-    Alerts the user if any or all worksheets are invalid.
-
-    :param1 workbook: dict
-    '''
+    workbook = gui.openExcelFile("Choose the Excel workbook you'd like to validate.")
 
     validate_with_sql = gui.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
-    any_changes = False  # False if all spreadsheets fail validation
-    all_sheets_okay = True  # True if all spreadsheets pass validation
+    any_valid_sheets, all_valid_sheets = validWorkbook(
+        workbook, validate_with_sql)
+
+    displayWorkbookValidationResult(any_valid_sheets, all_valid_sheets)
+
+
+def validWorkbook(workbook, validate_with_sql):
+    '''Cycles through worksheets in a workbook checking if they're valid.
+
+    :param1 workbook: dict
+    :param2 validate_with_sql: str
+    '''
+
+    any_valid_sheets = False  # False if all spreadsheets fail validation
+    all_valid_sheets = True  # True if all spreadsheets pass validation
 
     for worksheet in workbook:
         # check if worksheet is is valid and if user wants to write scripts for them
-        valid_template = excel_global.validWorksheet(
+        valid_worksheet = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
-        all_sheets_okay = valid_template  # True if spreadsheet passes validation
-        if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
+        # True if spreadsheet passes validation
+        all_valid_sheets = valid_worksheet and all_valid_sheets
+        if valid_worksheet:  # only write to Excel if the Excel spreadsheet is a valid format
             output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
             gui.createPopUpBox(
                 output_string)  # tkinter dialog box
-            any_changes = True  # changes were made and need to be saved
+            any_valid_sheets = True  # changes were made and need to be saved
 
-    if any_changes and not all_sheets_okay:  # some but not all spreadsheets in workbook pass validation
+    return any_valid_sheets, all_valid_sheets
+
+
+def displayWorkbookValidationResult(any_valid_sheets, all_valid_sheets):
+    '''Generates a window displaying the status of the completed validation.
+
+    :param1 any_valid_sheets: bool
+    :param2 all_valid_sheets: bool
+    '''
+
+    if all_valid_sheets:
+        output_string = "SUCCESS. All sheets hae been successfully validated."
+    elif not any_valid_sheets:
+        output_string = "FAILURE. No sheets could be successfully validated. Please review rules."
+    else:  # some but not all spreadsheets in workbook pass validation
         output_string = "CAUTION. Care must be taken building scripts with this workbook because not all sheets are in a valid form."
-        gui.createPopUpBox(output_string)
+
+    gui.createPopUpBox(output_string)
