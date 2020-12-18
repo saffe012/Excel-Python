@@ -14,7 +14,7 @@ from excel_constants import *
 
 
 def main():
-    '''Main run function for the Excel python program. Called once on program initialization
+    '''Main run function for the SQL Generator program. Called once on program initialization
 
     :return: NONE
     '''
@@ -35,7 +35,7 @@ def main():
 
 '''
     except Exception as e:
-        gui.createErrorBox(repr(e))
+        gui.createPopUpBox(repr(e))
         print(repr(e))
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

@@ -64,7 +64,7 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
     disable_change = []
     root = tkinter.Tk()
     gui.addQuitMenuButton(root)
-    root.title('Excel Python')
+    root.title('SQL Generator')
     if len(column_names) < 10:
         horizontal_sections = float(len(column_names) + 3)
         height = int(horizontal_sections * 50)
@@ -156,7 +156,7 @@ def populateWhereRow(sql_table_name, column_names):
     where_values = []
     root = tkinter.Tk()
     gui.addQuitMenuButton(root)
-    root.title('Excel Python')
+    root.title('SQL Generator')
 
     if len(column_names) < 10:
         horizontal_sections = float(len(column_names) + 3)
@@ -292,7 +292,7 @@ def getTypeOfScriptFromUser(worksheet_title):
 
     root = tkinter.Tk()
     gui.addQuitMenuButton(root)
-    root.title('Excel Python')
+    root.title('SQL Generator')
     root.geometry("500x500")
     script_type = tkinter.StringVar()
     script_type.set("insert")
@@ -324,7 +324,7 @@ def getTemplateType():
 
     root = tkinter.Tk()
     gui.addQuitMenuButton(root)
-    root.title('Excel Python')
+    root.title('SQL Generator')
     root.geometry("500x500")
     template_type = tkinter.StringVar()
     template_type.set("generic")

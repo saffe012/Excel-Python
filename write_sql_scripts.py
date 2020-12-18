@@ -20,7 +20,8 @@ def writeMode():
     :return: NONE
     '''
 
-    gui.displayExcelFormatInstructions()  # tkinter dialog box
+    # displays how Excel spreadsheet should be laid out
+    gui.createPopUpBox(TEMPLATE_DESCRIPTION, "600x500")  # tkinter dialog box
 
     output_string = "Choose the Excel workbook you'd like to make scripts for."
     workbook = gui.openExcelFile(output_string)

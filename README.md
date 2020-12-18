@@ -50,7 +50,7 @@ python excel.py
 
 The program has three main run modes. In order to generate scripts from an excel file using this program, the Excel file you're reading from has to contain certain information and be formatted in a certain way. One of the functions of this program allows the user to create an Excel template in which they can deposit their data to the be used to write scripts (one of the other modes of the program). 
 
-Upon starting the Excel Python program the user will be prompted to choose whether they'd like to "Build Excel template", "Write SQL scripts", or "Check if workbook is valid for writing scripts". 
+Upon starting the SQL Generator program the user will be prompted to choose whether they'd like to "Build Excel template", "Write SQL scripts", or "Check if workbook is valid for writing scripts". 
 
 #### Build Excel template
 

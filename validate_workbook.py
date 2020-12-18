@@ -15,7 +15,8 @@ def validationMode():
     :return: NONE
     '''
 
-    gui.displayExcelFormatInstructions()  # tkinter dialog box
+    # displays how Excel spreadsheet should be laid out
+    gui.createPopUpBox(TEMPLATE_DESCRIPTION, "600x500")  # tkinter dialog box
 
     workbook = gui.openExcelFile("Choose the Excel workbook you'd like to validate.")
 

@@ -6,6 +6,18 @@ Matt Saffert
 
 import numpy as np
 
+
+'''
+Descriptiton of how the Excel spreadsheet should be laid out.
+'''
+TEMPLATE_DESCRIPTION = 'Please make sure the excel spreadsheet that '
+                        'will be read was made with the tool and/or is formatted '
+                        'correctly:\nRow 1: col1: SQL tablename col2: script type\nRow 2: SQL column '
+                        'names\nRow 3: SQL data types\nRow 4: put "include" in '
+                        'cells you want to be inserted/updated\nRow 5: put "where" '
+                        'in cells you want to be included in delete/update where '
+                        'clause. (For inserts, leave blank)\nRow 6: Start of data'
+
 '''
 SQL Server String data types
 '''
