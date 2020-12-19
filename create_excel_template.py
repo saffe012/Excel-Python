@@ -19,28 +19,14 @@ def templateMode():
     '''
 
     template_type = getTemplateType()
-    # TODO: Test making template from sql
+
     if template_type == 'from_table':  # generates an Excel template from a SQL database
-        sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name = getTemplateInfo()  # tkinter dialog boxes
-        workbook = {sql_table_name: pd.DataFrame()}
-        worksheet = workbook[sql_table_name]
+        workbook = templateModeSQL()
 
-        # allows user to select the type of script this template is for
-        script_type = getTypeOfScriptFromUser(
-            sql_table_name).get()  # tkinter dialog box
-
-        # asks user which elements from the imported table they'd like to include in their scripts
-        sql_include_row, sql_where_row, disable_include_change = populateClauses(
-            sql_table_name, sql_column_names, column_is_nullable, column_is_identity, script_type)  # tkinter dialog boxes
-
-        # writes the generated template to the new Excel workbook
-        WriteTemplateToSheet(
-            worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
     elif template_type == 'generic':  # generates a generic template with default table data
         # dictionary filled with generic data to build template
-        generic_data = GENERIC_TEMPLATE
-        worksheet = pd.DataFrame(data=generic_data)
-        workbook = {'IOChannels': worksheet}
+        workbook = {'IOChannels': pd.DataFrame(data=GENERIC_TEMPLATE)}
+
     else:
         gui.closeProgram()
 
@@ -62,36 +48,24 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
 
     include_values = []
     disable_change = []
-    root = tkinter.Tk()
-    gui.addQuitMenuButton(root)
-    root.title('SQL Generator')
-    if len(column_names) < 10:
-        horizontal_sections = float(len(column_names) + 3)
-        height = int(horizontal_sections * 50)
-    else:
-        horizontal_sections = 13.0
-        height = 550
-    width = 500 + ((len(column_names) // 11) * 150)
-    vertical_sections = float((len(column_names) // 11) + 2)
-    wxh = str(width) + "x" + str(height)
-    root.geometry(wxh)
-    w = tkinter.Label(
-        root, text="Please select the columns you'd like to include in your script for the " + sql_table_name + " table:")
-    w.pack()
-    vertical_screen_fraction = 1 / vertical_sections
-    relx = float('%.3f' % (vertical_screen_fraction))
-    horizontal_screen_fraction = 1 / horizontal_sections
-    rely = horizontal_screen_fraction
-    w.place(relx=0.5, rely=rely, anchor='center')
+
+    width_x_height, x_spacing, y_spacing, vertical_screen_fraction, horizontal_screen_fraction = calculateGUISpacing(
+        column_names)
+
+    root = gui.generateBox(width_x_height)
+    description = "Please select the columns you'd like to include in your script for the " + \
+        sql_table_name + " table:"
+    gui.addLabelToBox(root, description, 0.5, y_spacing)
+
     count = 0
 
     # for each column of data add a check box to dialog box to allow user to select or deselect
     for i in range(len(column_names)):
         if count >= 10:
             count = 0
-            relx = float('%.3f' % (relx + vertical_screen_fraction))
-            rely = horizontal_screen_fraction
-        rely = float('%.3f' % (rely + horizontal_screen_fraction))
+            x_spacing = float('%.3f' % (x_spacing + vertical_screen_fraction))
+            y_spacing = horizontal_screen_fraction
+        y_spacing = float('%.3f' % (y_spacing + horizontal_screen_fraction))
         var = tkinter.IntVar()
         disable_change.append(0)
         # not identity so column can be included in scripts
@@ -103,13 +77,13 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
                     root, text=column_names[i], variable=include_values[i], state='disabled')
                 disable_change[i] = 1
                 b.select()
-                b.place(relx=relx, rely=rely, anchor='center')
+                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
             else:  # if nullable or select or update, then data can be but does not need to be included
                 include_values.append(var)
                 b = tkinter.Checkbutton(
                     root, text=column_names[i], variable=include_values[i])
                 b.deselect()
-                b.place(relx=relx, rely=rely, anchor='center')
+                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
         else:  # column is identity column so cannot be updated or inserted into.
             if script_type != 'select':  # insert/update on identity column is NOT allowed
                 include_values.append(var)
@@ -117,22 +91,16 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
                     root, text=column_names[i], variable=include_values[i], state='disabled')
                 disable_change[i] = 1
                 b.deselect()
-                b.place(relx=relx, rely=rely, anchor='center')
+                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
             else:  # select on identity column is allowed
                 include_values.append(var)
                 b = tkinter.Checkbutton(
                     root, text=column_names[i], variable=include_values[i])
                 b.deselect()
-                b.place(relx=relx, rely=rely, anchor='center')
+                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
         count += 1
 
-    rely = float('%.3f' % (rely + horizontal_screen_fraction))
-    if len(column_names) < 10:
-        button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
-            relx=0.5, rely=rely, anchor='center')
-    else:
-        button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
-            relx=0.5, rely=(horizontal_screen_fraction * 12), anchor='center')
+    placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names)
 
     tkinter.mainloop()
 
@@ -154,54 +122,33 @@ def populateWhereRow(sql_table_name, column_names):
     '''
 
     where_values = []
-    root = tkinter.Tk()
-    gui.addQuitMenuButton(root)
-    root.title('SQL Generator')
 
-    if len(column_names) < 10:
-        horizontal_sections = float(len(column_names) + 3)
-        height = int(horizontal_sections * 50)
-    else:
-        horizontal_sections = 13.0
-        height = 550
-    width = 500 + ((len(column_names) // 11) * 150)
-    vertical_sections = float((len(column_names) // 11) + 2)
-    wxh = str(width) + "x" + str(height)
+    width_x_height, x_spacing, y_spacing, vertical_screen_fraction, horizontal_screen_fraction = calculateGUISpacing(
+        column_names)
 
-    root.geometry(wxh)
-    w = tkinter.Label(
-        root, text="Please select the columns you'd like have in the where clause of your script for the " + sql_table_name + " table:")
-    w.pack()
+    root = gui.generateBox(width_x_height)
+    description = "Please select the columns you'd like have in the where clause of your script for the " + \
+        sql_table_name + " table:"
+    gui.addLabelToBox(root, description, 0.5, y_spacing)
 
-    vertical_screen_fraction = 1 / vertical_sections
-    relx = float('%.3f' % (vertical_screen_fraction))
-    horizontal_screen_fraction = 1 / horizontal_sections
-    rely = horizontal_screen_fraction
-    w.place(relx=0.5, rely=rely, anchor='center')
     count = 0
 
     # for each column of data add a check box to dialog box to allow user to select or deselect
     for i in range(len(column_names)):
         if count >= 10:
             count = 0
-            relx = float('%.3f' % (relx + vertical_screen_fraction))
-            rely = horizontal_screen_fraction
-        rely = float('%.3f' % (rely + horizontal_screen_fraction))
+            x_spacing = float('%.3f' % (x_spacing + vertical_screen_fraction))
+            y_spacing = horizontal_screen_fraction
+        y_spacing = float('%.3f' % (y_spacing + horizontal_screen_fraction))
         var = tkinter.IntVar()
         where_values.append(var)
         b = tkinter.Checkbutton(
             root, text=column_names[i], variable=where_values[i])
         b.deselect()
-        b.place(relx=relx, rely=rely, anchor='center')
+        b.place(relx=x_spacing, rely=y_spacing, anchor='center')
         count += 1
 
-    rely = float('%.3f' % (rely + horizontal_screen_fraction))
-    if len(column_names) < 10:
-        button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
-            relx=0.5, rely=rely, anchor='center')
-    else:
-        button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
-            relx=0.5, rely=(horizontal_screen_fraction * 12), anchor='center')
+    placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names)
 
     tkinter.mainloop()
 
@@ -290,16 +237,14 @@ def getTypeOfScriptFromUser(worksheet_title):
     :return: instance
     '''
 
-    root = tkinter.Tk()
-    gui.addQuitMenuButton(root)
-    root.title('SQL Generator')
-    root.geometry("500x500")
+    root = gui.generateBox("500x500")
+    description = "Please choose what type of scripts you'd like to create for '" + \
+        worksheet_title + "' worksheet:"
+    gui.addLabelToBox(root, description, 0.5, 0.1)
+
     script_type = tkinter.StringVar()
     script_type.set("insert")
-    w = tkinter.Label(
-        root, text="Please choose what type of scripts you'd like to create for '" + worksheet_title + "' worksheet:")
-    w.pack()
-    w.place(relx=0.5, rely=0.1, anchor='center')
+
     tkinter.Radiobutton(root, text='insert', variable=script_type,
                         value='insert').place(relx=0.5, rely=0.2, anchor='center')
     tkinter.Radiobutton(root, text='update', variable=script_type,
@@ -308,7 +253,7 @@ def getTypeOfScriptFromUser(worksheet_title):
                         value='delete').place(relx=0.5, rely=0.4, anchor='center')
     tkinter.Radiobutton(root, text='select', variable=script_type,
                         value='select').place(relx=0.5, rely=0.5, anchor='center')
-    button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+    tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
         relx=0.5, rely=0.6, anchor='center')
     tkinter.mainloop()
 
@@ -322,25 +267,20 @@ def getTemplateType():
     :return: str
     '''
 
-    root = tkinter.Tk()
-    gui.addQuitMenuButton(root)
-    root.title('SQL Generator')
-    root.geometry("500x500")
+    root = gui.generateBox("500x500")
+    description1 = "Please choose what type of template you'd like to create:"
+    gui.addLabelToBox(root, description1, 0.5, 0.1)
+    description2 = "Generic templates should be edited in order to match the data you put into the template."
+    gui.addLabelToBox(root, description2, 0.5, 0.2)
+
     template_type = tkinter.StringVar()
     template_type.set("generic")
-    w = tkinter.Label(
-        root, text="Please choose what type of template you'd like to create:")
-    w.pack()
-    w.place(relx=0.5, rely=0.1, anchor='center')
-    w = tkinter.Label(
-        root, text="Generic templates should be edited in order to match the data you put into the template.")
-    w.pack()
-    w.place(relx=0.5, rely=0.2, anchor='center')
+
     tkinter.Radiobutton(root, text='Generic template', variable=template_type,
                         value='generic').place(relx=0.5, rely=0.3, anchor='center')
     tkinter.Radiobutton(root, text='Template from existing SQL table', variable=template_type,
                         value='from_table').place(relx=0.5, rely=0.4, anchor='center')
-    button = tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+    tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
         relx=0.5, rely=0.6, anchor='center')
     tkinter.mainloop()
 
@@ -367,3 +307,76 @@ def getTemplateInfo():
         sql_table_name, cursor)
 
     return sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name
+
+
+def calculateGUISpacing(column_names):
+    '''Calculates the spacing required to place elements on the GUI box.
+
+    :param1 column_names: List[str]
+
+    :return: str, float, float, float, float
+    '''
+
+    if len(column_names) < 10:
+        horizontal_sections = float(len(column_names) + 3)
+        height = int(horizontal_sections * 50)
+    else:
+        horizontal_sections = 13.0
+        height = 550
+
+    width = 500 + ((len(column_names) // 11) * 150)
+    vertical_sections = float((len(column_names) // 11) + 2)
+    width_x_height = str(width) + "x" + str(height)
+
+    vertical_screen_fraction = 1 / vertical_sections
+    x_spacing = float('%.3f' % (vertical_screen_fraction))
+    horizontal_screen_fraction = 1 / horizontal_sections
+    y_spacing = horizontal_screen_fraction
+
+    return width_x_height, x_spacing, y_spacing, vertical_screen_fraction, horizontal_screen_fraction
+
+
+def templateModeSQL():
+    '''Runs the template generation mode using SQL.
+
+    :return: dict
+    '''
+
+    # tkinter dialog boxes
+    sql_column_names, sql_column_types, column_is_nullable, column_is_identity, sql_table_name = getTemplateInfo()
+    workbook = {sql_table_name: pd.DataFrame()}
+    worksheet = workbook[sql_table_name]
+
+    # allows user to select the type of script this template is for
+    script_type = getTypeOfScriptFromUser(
+        sql_table_name).get()  # tkinter dialog box
+
+    # asks user which elements from the imported table they'd like to include in their scripts
+    sql_include_row, sql_where_row, disable_include_change = populateClauses(
+        sql_table_name, sql_column_names, column_is_nullable, column_is_identity, script_type)  # tkinter dialog boxes
+
+    # writes the generated template to the new Excel workbook
+    WriteTemplateToSheet(
+        worksheet, sql_column_names, sql_column_types, sql_include_row, sql_where_row, disable_include_change)
+
+    return workbook
+
+
+def placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names):
+    '''Places "Next" button on GUI that will advance program.
+
+    :param1 y_spacing: float
+    :param2 horizontal_screen_fraction: float
+    :param3 root: tkinter
+    :param4 column_names: List[str]
+
+    :return: NONE
+    '''
+
+    y_spacing = float('%.3f' % (y_spacing + horizontal_screen_fraction))
+    if len(column_names) < 10:
+        tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+            relx=0.5, rely=y_spacing, anchor='center')
+    else:
+        tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
+            relx=0.5, rely=(horizontal_screen_fraction * 12), anchor='center')
