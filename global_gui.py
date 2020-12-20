@@ -83,12 +83,8 @@ def closeProgram():
 
     :return: NONE
     '''
-
-    root = generateBox("450x150")
-
     description = "Are you sure you want to close the program?"
-
-    addLabelToBox(root, description, relx=0.5, rely=0.2)
+    root = generateWindow("450x150", description, relx=0.5, rely=0.2)
 
     str_len = len(description)
     text_height = (str_len // 35) + 1
@@ -110,9 +106,7 @@ def createYesNoBox(description, label1, label2, dimensions="500x500"):
     :return: str
     '''
 
-    root = generateBox(dimensions)
-
-    addLabelToBox(root, description, relx=0.5, rely=0.1)
+    root = generateWindow(dimensions, description, relx=0.5, rely=0.1)
 
     program_mode = tkinter.StringVar()
     program_mode.set(label1)
@@ -135,10 +129,8 @@ def getProgramMode():
     :return: instance
     '''
 
-    root = generateBox("500x500")
-
     description = "Would you like to build an Excel template or write SQL scripts to an Excel file: "
-    addLabelToBox(root, description, relx=0.5, rely=0.1)
+    root = generateWindow("500x500", description, relx=0.5, rely=0.1)
 
     program_mode = tkinter.StringVar()
     program_mode.set("scripts")
@@ -161,11 +153,10 @@ def createPopUpBox(description, dimensions="450x150"):
     to acknowledge info/close window
 
     :param1 description: str
+    :param2 dimensions: str
     '''
 
-    root = generateBox(dimensions)
-
-    addLabelToBox(root, description, relx=0.5, rely=0.2)
+    root = generateWindow(dimensions, description, relx=0.5, rely=0.2)
 
     tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
         relx=0.5, rely=0.8, anchor='center')
@@ -182,11 +173,9 @@ def createTextEntryBox(description, label):
     :return: instance
     '''
 
-    root = generateBox("600x400")
+    root = generateWindow("600x400", description, relx=0.5, rely=0.3)
 
     entry_value = tkinter.StringVar()
-
-    addLabelToBox(root, description, relx=0.5, rely=0.3)
 
     tkinter.Label(root, text=label).place(
         relx=0.4, rely=0.4, anchor='center')
@@ -210,12 +199,10 @@ def createDropDownBox(description, label, data):
     :return: ?
     '''
 
-    root = generateBox("500x500")
+    root = generateWindow("500x500", description, relx=0.5, rely=0.3)
 
     value = tkinter.StringVar(root)
     value.set(data[0])  # default value
-
-    addLabelToBox(root, description, relx=0.5, rely=0.3)
 
     tkinter.Label(root, text=label).place(
         relx=0.4, rely=0.4, anchor='center')
@@ -252,9 +239,9 @@ def addLabelToBox(root, description, relx=0.5, rely=0.2, anchor='center'):
 
     :param1 root: str
     :param2 description: str
-    :param3 relx: List[?]
-    :param4 rely: str
-    :param5 anchor: List[?]
+    :param3 relx: float
+    :param4 rely: float
+    :param5 anchor: str
 
     :return: NONE
     '''
@@ -283,3 +270,31 @@ def reformatExcelInput(workbook):
                                                              i: (i - 5)})
 
     return workbook
+
+
+def generateWindow(dimensions, description, relx=0.5, rely=0.2, anchor='center'):
+    '''Inserts text into a tkinter dialog box.
+
+    :param1 dimensions: str
+    :param2 description: str
+    :param3 relx: float
+    :param4 rely: float
+    :param5 anchor: str
+
+    :return: ?
+    '''
+
+    root = gui.generateBox(dimensions)
+    gui.addLabelToBox(root, description, relx, rely, anchor)
+
+    return root
+
+
+def createCheckBox(root, column_name, include_value, select=False, disable=False, x_spacing, y_spacing):
+    b = tkinter.Checkbutton(
+        root, text=column_name, variable=include_value, state='disabled')
+    if select:
+        b.select()
+    else:
+        be.deselect()
+    b.place(relx=x_spacing, rely=y_spacing, anchor='center')

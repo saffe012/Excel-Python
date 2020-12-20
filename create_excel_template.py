@@ -52,10 +52,9 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
     width_x_height, x_spacing, y_spacing, vertical_screen_fraction, horizontal_screen_fraction = calculateGUISpacing(
         column_names)
 
-    root = gui.generateBox(width_x_height)
     description = "Please select the columns you'd like to include in your script for the " + \
         sql_table_name + " table:"
-    gui.addLabelToBox(root, description, 0.5, y_spacing)
+    root = gui.generateWindow(width_x_height, description, relx=0.5, rely=y_spacing)
 
     count = 0
 
@@ -126,10 +125,9 @@ def populateWhereRow(sql_table_name, column_names):
     width_x_height, x_spacing, y_spacing, vertical_screen_fraction, horizontal_screen_fraction = calculateGUISpacing(
         column_names)
 
-    root = gui.generateBox(width_x_height)
     description = "Please select the columns you'd like have in the where clause of your script for the " + \
         sql_table_name + " table:"
-    gui.addLabelToBox(root, description, 0.5, y_spacing)
+    root = gui.generateWindow(width_x_height, description, relx=0.5, rely=y_spacing)
 
     count = 0
 
@@ -237,10 +235,9 @@ def getTypeOfScriptFromUser(worksheet_title):
     :return: instance
     '''
 
-    root = gui.generateBox("500x500")
     description = "Please choose what type of scripts you'd like to create for '" + \
         worksheet_title + "' worksheet:"
-    gui.addLabelToBox(root, description, 0.5, 0.1)
+    root = gui.generateWindow("500x500", description, relx=0.5, rely=0.1)
 
     script_type = tkinter.StringVar()
     script_type.set("insert")
@@ -267,9 +264,11 @@ def getTemplateType():
     :return: str
     '''
 
-    root = gui.generateBox("500x500")
+    # Create box and add label
     description1 = "Please choose what type of template you'd like to create:"
-    gui.addLabelToBox(root, description1, 0.5, 0.1)
+    root = gui.generateWindow("500x500", description1, relx=0.5, rely=0.1)
+
+    # Add second label
     description2 = "Generic templates should be edited in order to match the data you put into the template."
     gui.addLabelToBox(root, description2, 0.5, 0.2)
 
