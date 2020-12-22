@@ -237,7 +237,7 @@ def generateBox(dimensions):
 def addLabelToBox(root, description, relx=0.5, rely=0.2, anchor='center'):
     '''Inserts text into a tkinter dialog box.
 
-    :param1 root: str
+    :param1 root: ?
     :param2 description: str
     :param3 relx: float
     :param4 rely: float
@@ -291,6 +291,19 @@ def generateWindow(dimensions, description, relx=0.5, rely=0.2, anchor='center')
 
 
 def createCheckBox(root, column_name, include_value, select=False, disable=False, x_spacing, y_spacing):
+    '''Inserts text into a tkinter dialog box.
+
+    :param1 root: ?
+    :param2 column_name: str
+    :param3 include_value: str
+    :param4 select: bool
+    :param5 disable: bool
+    :param6 x_spacing: float
+    :param7 y_soacing: float
+
+    :return: NONE
+    '''
+
     b = tkinter.Checkbutton(
         root, text=column_name, variable=include_value, state='disabled')
     if select:

@@ -54,7 +54,8 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
 
     description = "Please select the columns you'd like to include in your script for the " + \
         sql_table_name + " table:"
-    root = gui.generateWindow(width_x_height, description, relx=0.5, rely=y_spacing)
+    root = gui.generateWindow(
+        width_x_height, description, relx=0.5, rely=y_spacing)
 
     count = 0
 
@@ -72,31 +73,19 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
             # if script type is insert, and column cannot be null then automatically select
             if column_is_nullable[i] == 'NO' and script_type not in ('select', 'update'):
                 include_values.append(var)
-                b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i], state='disabled')
                 disable_change[i] = 1
-                b.select()
-                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
+                gui.createCheckBox(root, column_names[i], include_values[i], select=True, disable=True, x_spacing, y_spacing)
             else:  # if nullable or select or update, then data can be but does not need to be included
                 include_values.append(var)
-                b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i])
-                b.deselect()
-                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
+                gui.createCheckBox(root, column_names[i], include_values[i], select=False, disable=False, x_spacing, y_spacing)
         else:  # column is identity column so cannot be updated or inserted into.
             if script_type != 'select':  # insert/update on identity column is NOT allowed
                 include_values.append(var)
-                b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i], state='disabled')
                 disable_change[i] = 1
-                b.deselect()
-                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
+                gui.createCheckBox(root, column_names[i], include_values[i], select=False, disable=True, x_spacing, y_spacing)
             else:  # select on identity column is allowed
                 include_values.append(var)
-                b = tkinter.Checkbutton(
-                    root, text=column_names[i], variable=include_values[i])
-                b.deselect()
-                b.place(relx=x_spacing, rely=y_spacing, anchor='center')
+                gui.createCheckBox(root, column_names[i], include_values[i], select=False, disable=False, x_spacing, y_spacing)
         count += 1
 
     placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names)
@@ -127,7 +116,8 @@ def populateWhereRow(sql_table_name, column_names):
 
     description = "Please select the columns you'd like have in the where clause of your script for the " + \
         sql_table_name + " table:"
-    root = gui.generateWindow(width_x_height, description, relx=0.5, rely=y_spacing)
+    root = gui.generateWindow(
+        width_x_height, description, relx=0.5, rely=y_spacing)
 
     count = 0
 
@@ -140,10 +130,8 @@ def populateWhereRow(sql_table_name, column_names):
         y_spacing = float('%.3f' % (y_spacing + horizontal_screen_fraction))
         var = tkinter.IntVar()
         where_values.append(var)
-        b = tkinter.Checkbutton(
-            root, text=column_names[i], variable=where_values[i])
-        b.deselect()
-        b.place(relx=x_spacing, rely=y_spacing, anchor='center')
+
+        gui.createCheckBox(root, column_names[i], where_values[i], select=False, disable=False, x_spacing, y_spacing)
         count += 1
 
     placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names)
