@@ -187,8 +187,8 @@ def validWorksheet(worksheet, validate_with_sql, title):
         title + " worksheet?"
     yes = "Yes"
     no = "No"
-    write_script_for = gui.createYesNoBox(
-        description, yes, no)
+    write_script_for, additional_box_val = gui.createYesNoBox(
+        description, yes, no, additional_box=True)
 
     valid_template = True
     if validate_with_sql == 'Generic':
@@ -208,7 +208,7 @@ def validWorksheet(worksheet, validate_with_sql, title):
             gui.createPopUpBox(
                 'Validation failed. Scripts will not be written for ' + title)
 
-    return valid_template
+    return valid_template, additional_box_val
 
 
 def getSQLTableInfo(sql_table_name, cursor):

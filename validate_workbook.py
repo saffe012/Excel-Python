@@ -7,6 +7,7 @@ Matt Saffert
 
 import excel_global
 import global_gui as gui
+from excel_constants import *
 
 
 def validationMode():
@@ -20,7 +21,7 @@ def validationMode():
 
     workbook = gui.openExcelFile("Choose the Excel workbook you'd like to validate.")
 
-    validate_with_sql = gui.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
+    validate_with_sql, additional_box_val = gui.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
     any_valid_sheets, all_valid_sheets = validWorkbook(
@@ -38,17 +39,19 @@ def validWorkbook(workbook, validate_with_sql):
 
     any_valid_sheets = False  # False if all spreadsheets fail validation
     all_valid_sheets = True  # True if all spreadsheets pass validation
+    additional_box_val = 0
 
     for worksheet in workbook:
         # check if worksheet is is valid and if user wants to write scripts for them
-        valid_worksheet = excel_global.validWorksheet(
+        valid_worksheet, additional_box_val = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
         # True if spreadsheet passes validation
         all_valid_sheets = valid_worksheet and all_valid_sheets
         if valid_worksheet:  # only write to Excel if the Excel spreadsheet is a valid format
-            output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
-            gui.createPopUpBox(
-                output_string)  # tkinter dialog box
+            if not additional_box_val:
+                output_string = "VALID. This worksheet will function properly with the 'Write SQL script' mode of this program."
+                gui.createPopUpBox(
+                    output_string)  # tkinter dialog box
             any_valid_sheets = True  # changes were made and need to be saved
 
     return any_valid_sheets, all_valid_sheets

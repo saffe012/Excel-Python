@@ -96,7 +96,7 @@ def closeProgram():
     tkinter.mainloop()
 
 
-def createYesNoBox(description, label1, label2, dimensions="500x500"):
+def createYesNoBox(description, label1, label2, dimensions="500x500", additional_box=False):
     '''Creates a tkinter pop-up box that gives the user a choice between 2 options
 
     :param1 description: str
@@ -115,11 +115,14 @@ def createYesNoBox(description, label1, label2, dimensions="500x500"):
                         value=label1).place(relx=0.5, rely=0.4, anchor='center')
     tkinter.Radiobutton(root, text=label2, variable=program_mode,
                         value=label2).place(relx=0.5, rely=0.5, anchor='center')
+    additional_box_val = tkinter.IntVar()
+    if additional_box:
+        createCheckBox(root, "Do this for all spreadsheets.", additional_box_val, 0.5, 0.6, select=False)
     tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
-        relx=0.5, rely=0.6, anchor='center')
+        relx=0.5, rely=0.7, anchor='center')
     tkinter.mainloop()
 
-    return program_mode.get()
+    return program_mode.get(), additional_box_val
 
 
 def getProgramMode():
@@ -284,13 +287,13 @@ def generateWindow(dimensions, description, relx=0.5, rely=0.2, anchor='center')
     :return: ?
     '''
 
-    root = gui.generateBox(dimensions)
-    gui.addLabelToBox(root, description, relx, rely, anchor)
+    root = generateBox(dimensions)
+    addLabelToBox(root, description, relx, rely, anchor)
 
     return root
 
 
-def createCheckBox(root, column_name, include_value, select=False, disable=False, x_spacing, y_spacing):
+def createCheckBox(root, column_name, include_value, x_spacing, y_spacing, select=False, disable='normal'):
     '''Inserts text into a tkinter dialog box.
 
     :param1 root: ?
@@ -305,9 +308,9 @@ def createCheckBox(root, column_name, include_value, select=False, disable=False
     '''
 
     b = tkinter.Checkbutton(
-        root, text=column_name, variable=include_value, state='disabled')
+        root, text=column_name, variable=include_value, state=disable)
     if select:
         b.select()
     else:
-        be.deselect()
+        b.deselect()
     b.place(relx=x_spacing, rely=y_spacing, anchor='center')

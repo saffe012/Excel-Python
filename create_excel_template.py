@@ -74,18 +74,18 @@ def populateIncludeRow(sql_table_name, column_names, column_is_nullable, column_
             if column_is_nullable[i] == 'NO' and script_type not in ('select', 'update'):
                 include_values.append(var)
                 disable_change[i] = 1
-                gui.createCheckBox(root, column_names[i], include_values[i], select=True, disable=True, x_spacing, y_spacing)
+                gui.createCheckBox(root, column_names[i], include_values[i], x_spacing, y_spacing, select=True, disable='disabled')
             else:  # if nullable or select or update, then data can be but does not need to be included
                 include_values.append(var)
-                gui.createCheckBox(root, column_names[i], include_values[i], select=False, disable=False, x_spacing, y_spacing)
+                gui.createCheckBox(root, column_names[i], include_values[i], x_spacing, y_spacing, select=False, disable='normal')
         else:  # column is identity column so cannot be updated or inserted into.
             if script_type != 'select':  # insert/update on identity column is NOT allowed
                 include_values.append(var)
                 disable_change[i] = 1
-                gui.createCheckBox(root, column_names[i], include_values[i], select=False, disable=True, x_spacing, y_spacing)
+                gui.createCheckBox(root, column_names[i], include_values[i], x_spacing, y_spacing, select=False, disable='disabled')
             else:  # select on identity column is allowed
                 include_values.append(var)
-                gui.createCheckBox(root, column_names[i], include_values[i], select=False, disable=False, x_spacing, y_spacing)
+                gui.createCheckBox(root, column_names[i], include_values[i], x_spacing, y_spacing, select=False, disable='normal')
         count += 1
 
     placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names)
@@ -131,7 +131,7 @@ def populateWhereRow(sql_table_name, column_names):
         var = tkinter.IntVar()
         where_values.append(var)
 
-        gui.createCheckBox(root, column_names[i], where_values[i], select=False, disable=False, x_spacing, y_spacing)
+        gui.createCheckBox(root, column_names[i], where_values[i], x_spacing, y_spacing, select=False, disable='normal')
         count += 1
 
     placeNextButton(y_spacing, horizontal_screen_fraction, root, column_names)

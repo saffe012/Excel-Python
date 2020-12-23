@@ -26,13 +26,13 @@ def writeMode():
     output_string = "Choose the Excel workbook you'd like to make scripts for."
     workbook = gui.openExcelFile(output_string)
 
-    validate_with_sql = gui.createYesNoBox(
+    validate_with_sql, additional_box_val = gui.createYesNoBox(
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
     write_to_sql = 'SQL'
     write_to_excel = 'Excel'
     description = 'Would you like to write the sql scripts to a ".sql" file or to an Excel spreadsheet?'
-    write_to = gui.createYesNoBox(  # write scripts to new SQL or Excel file
+    write_to, additional_box_val = gui.createYesNoBox(  # write scripts to new SQL or Excel file
         description, write_to_sql, write_to_excel)
 
     if write_to == 'SQL':
@@ -404,7 +404,7 @@ def writeToExcel(workbook, validate_with_sql):
     valid_template = True
 
     for worksheet in workbook:
-        valid_template = excel_global.validWorksheet(
+        valid_template, additional_box_val = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
 
         if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
@@ -462,7 +462,7 @@ def writeToSQL(workbook, validate_with_sql):
     valid_template = True
 
     for worksheet in workbook:
-        valid_template = excel_global.validWorksheet(
+        valid_template, additional_box_val = excel_global.validWorksheet(
             workbook[worksheet], validate_with_sql, worksheet)
         if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
 
