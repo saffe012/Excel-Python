@@ -22,7 +22,7 @@ def validationMode():
     workbook = gui.openExcelFile("Choose the Excel workbook you'd like to validate.")
 
     validate_with_sql, additional_box_val = gui.createTwoChoiceBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
-        'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
+        'Would you like to validate Workbook with SQL table or generic validation?', 'Generic', 'SQL')
 
     any_valid_sheets, all_valid_sheets = validWorkbook(
         workbook, validate_with_sql)
@@ -40,11 +40,12 @@ def validWorkbook(workbook, validate_with_sql):
     any_valid_sheets = False  # False if all spreadsheets fail validation
     all_valid_sheets = True  # True if all spreadsheets pass validation
     additional_box_val = 0
+    write_script_for = "Yes"
 
     for worksheet in workbook:
         # check if worksheet is is valid and if user wants to write scripts for them
-        valid_worksheet, additional_box_val = excel_global.validWorksheet(
-            workbook[worksheet], validate_with_sql, worksheet)
+        valid_worksheet, additional_box_val, write_script_for = excel_global.validWorksheet(
+            workbook[worksheet], validate_with_sql, worksheet, additional_box_val, write_script_for)
         # True if spreadsheet passes validation
         all_valid_sheets = valid_worksheet and all_valid_sheets
         if valid_worksheet:  # only write to Excel if the Excel spreadsheet is a valid format

@@ -23,13 +23,16 @@ def validateData(worksheet):
     '''
 
     valid_template = True
+    skip_remaining_errors = False
 
     for row in range(START_OF_DATA_ROWS_INDEX, len(worksheet) - 1):
         for i in range(len(worksheet.loc['info'])):
             if pd.isnull(worksheet.iloc[row][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
                 valid_template = False
-                gui.createPopUpBox(
+                skip_remaining_errors = gui.createInvalidCellBox(
                     'You have not entered a value in cell ' + getExcelCellToInsertInto(i, row) + ' where one is required')
+                if skip_remaining_errors:
+                    return valid_template
     blank_last_row = True
     for i in range(len(worksheet.iloc[len(worksheet) - 1])):
         if not (pd.isnull(worksheet.iloc[len(worksheet) - 1][i])):
@@ -38,8 +41,10 @@ def validateData(worksheet):
         for i in range(len(worksheet.iloc[len(worksheet) - 1])):
             if pd.isnull(worksheet.iloc[len(worksheet) - 1][i]) and (worksheet.loc['include'][i] == 'include' or worksheet.loc['where'][i] == 'where'):
                 valid_template = False
-                gui.createPopUpBox(
+                skip_remaining_errors = gui.createInvalidCellBox(
                     'You have not entered a value in cell ' + getExcelCellToInsertInto(i, len(worksheet) - 1) + ' where one is required')
+                if skip_remaining_errors:
+                    return valid_template
 
     return valid_template
 
@@ -172,7 +177,7 @@ def validateWorksheetGeneric(worksheet):
     return validateData(worksheet) and valid_template
 
 
-def validWorksheet(worksheet, validate_with_sql, title):
+def validWorksheet(worksheet, validate_with_sql, title, skip_popup, write_script_for):
     '''Calls the correct function to validate the passed worksheet based on
     whether a user wants to connect to SQL or not.
 
@@ -187,9 +192,10 @@ def validWorksheet(worksheet, validate_with_sql, title):
         title + " worksheet?"
     yes = "Yes"
     no = "No"
-    write_script_for, additional_box_val = gui.createTwoChoiceBox(
-        description, yes, no, additional_box=(True, 'Do this for all spreadsheets.'))
-
+    if not skip_popup:
+        write_script_for, skip_popup = gui.createTwoChoiceBox(
+            description, yes, no, additional_box=(True, 'Do this for all spreadsheets.'))
+    print(write_script_for, skip_popup)
     valid_template = True
     if validate_with_sql == 'Generic':
         if write_script_for == yes:  # if the user says to write scripts for this sheet
@@ -197,18 +203,20 @@ def validWorksheet(worksheet, validate_with_sql, title):
                 worksheet) and valid_template
         else:
             valid_template = False
-            gui.createPopUpBox(
-                'Validation failed. Scripts will not be written for ' + title)
+            if not skip_popup:
+                gui.createPopUpBox(
+                    'Validation failed. Scripts will not be written for ' + title)
 
     elif validate_with_sql == 'SQL':
         if write_script_for == yes:  # if the user says to write scripts for this sheet
             valid_template = validateWorksheetSQL(worksheet) and valid_template
         else:
             valid_template = False
-            gui.createPopUpBox(
-                'Validation failed. Scripts will not be written for ' + title)
+            if not skip_popup:
+                gui.createPopUpBox(
+                    'Validation failed. Scripts will not be written for ' + title)
 
-    return valid_template, additional_box_val
+    return valid_template, skip_popup, write_script_for
 
 
 def getSQLTableInfo(sql_table_name, cursor):

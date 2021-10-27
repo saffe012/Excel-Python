@@ -27,7 +27,7 @@ def writeMode():
     workbook = gui.openExcelFile(output_string)
 
     validate_with_sql, additional_box_val = gui.createTwoChoiceBox(
-        'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
+        'Would you like to validate Workbook with SQL table or generic validation?', 'Generic', 'SQL')
 
     write_to_sql = 'SQL'
     write_to_excel = 'Excel'
@@ -400,14 +400,16 @@ def writeToExcel(workbook, validate_with_sql):
     :return: bool
     '''
 
+    any_valid_sheets = False  # False if all spreadsheets fail validation
     any_changes = ''
-    valid_template = True
+    additional_box_val = 0
+    write_script_for = "Yes"
 
     for worksheet in workbook:
-        valid_template, additional_box_val = excel_global.validWorksheet(
-            workbook[worksheet], validate_with_sql, worksheet)
+        valid_worksheet, additional_box_val, write_script_for = excel_global.validWorksheet(
+            workbook[worksheet], validate_with_sql, worksheet, additional_box_val, write_script_for)
 
-        if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
+        if valid_worksheet:  # only write to Excel if the Excel spreadsheet is a valid format
 
             # returns dict containing excel cell coordinates as key and script to writeas value
             scripts = writeScripts(workbook[worksheet])
@@ -418,8 +420,10 @@ def writeToExcel(workbook, validate_with_sql):
             for cell, script in scripts.items():
                 df_scripts.append(script)
             workbook[worksheet]['scripts'] = df_scripts
+
+            any_valid_sheets = True  # changes were made and need to be saved
     #
-    if valid_template:
+    if any_valid_sheets:
         gui.saveToExcel(workbook)
 
     return any_changes
@@ -457,14 +461,17 @@ def writeToSQL(workbook, validate_with_sql):
     :return: bool
     '''
 
+    any_valid_sheets = False  # False if all spreadsheets fail validation
     any_changes = ''
     text_file = ''
-    valid_template = True
+    additional_box_val = 0
+    write_script_for = "Yes"
 
     for worksheet in workbook:
-        valid_template, additional_box_val = excel_global.validWorksheet(
-            workbook[worksheet], validate_with_sql, worksheet)
-        if valid_template:  # only write to Excel if the Excel spreadsheet is a valid format
+        valid_worksheet, additional_box_val, write_script_for = excel_global.validWorksheet(
+            workbook[worksheet], validate_with_sql, worksheet, additional_box_val, write_script_for)
+
+        if valid_worksheet:  # only write to Excel if the Excel spreadsheet is a valid format
 
             # returns dict containing excel cell coordinates as key and script to write as value
             scripts = writeScripts(workbook[worksheet])
@@ -473,8 +480,10 @@ def writeToSQL(workbook, validate_with_sql):
 
             for cell, script in scripts.items():
                 text_file += script + '\n'
+
+            any_valid_sheets = True  # changes were made and need to be saved
     #
-    if valid_template:
+    if any_valid_sheets:
         saveToSQL(text_file)
 
     return any_changes

@@ -124,7 +124,7 @@ def createTwoChoiceBox(description, label1, label2, dimensions="500x500", additi
         relx=0.5, rely=0.7, anchor='center')
     tkinter.mainloop()
 
-    return program_mode.get(), additional_box_val
+    return program_mode.get(), additional_box_val.get()
 
 
 def getProgramMode():
@@ -166,6 +166,26 @@ def createPopUpBox(description, dimensions="450x150"):
     tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
         relx=0.5, rely=0.8, anchor='center')
     tkinter.mainloop()
+
+
+def createInvalidCellBox(description, dimensions="450x150"):
+    '''Creates a tkinter pop-up box that displays whatever text is input with an "Ok" button
+    to acknowledge info/close window
+
+    :param1 description: str
+    :param2 dimensions: str
+    '''
+
+    root = generateWindow(dimensions, description, relx=0.5, rely=0.2)
+
+    additional_box_val = tkinter.IntVar()
+    createCheckBox(root, 'Would you like to ignore remaining errors?', additional_box_val, 0.5, 0.6, select=False)
+
+    tkinter.Button(root, text='Ok', width=25, command=root.destroy).place(
+        relx=0.5, rely=0.8, anchor='center')
+    tkinter.mainloop()
+
+    return additional_box_val.get()
 
 
 def createTextEntryBox(description, label):
