@@ -97,7 +97,7 @@ def validateWorksheetSQL(worksheet):
         if worksheet.loc['include'][i] != None and worksheet.loc['include'][i] != 'include':
             valid_template = False
             gui.createPopUpBox(
-                'You have not entered an invalid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
+                'You have not entered an valid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
         if worksheet.loc['info'][1] != 'delete':
             if column_is_identity[i] == 0:
                 # if script type is insert, and column cannot be null then automatically select
@@ -118,7 +118,7 @@ def validateWorksheetSQL(worksheet):
         if worksheet.loc['where'][i] != None and worksheet.loc['where'][i] != 'where':
             valid_template = False
             gui.createPopUpBox(
-                'You have not entered an invalid string in a cell in cell ' + getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
+                'You have not entered an valid string in a cell in cell ' + getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
 
     return validateData(worksheet) and valid_template
 
@@ -161,13 +161,13 @@ def validateWorksheetGeneric(worksheet):
         if not (pd.isnull(worksheet.loc['include'][i])) and worksheet.loc['include'][i] != 'include':
             valid_template = False
             gui.createPopUpBox(
-                'You have not entered an invalid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
+                'You have not entered an valid string in cell ' + getExcelCellToInsertInto(i, INCLUDE_ROW_INDEX) + '. Valid string for row 4 is "include" or leave blank')
 
     for i in range(len(worksheet.loc['where'])):
         if not (pd.isnull(worksheet.loc['where'][i])) and worksheet.loc['where'][i] != 'where':
             valid_template = False
             gui.createPopUpBox(
-                'You have not entered an invalid string in a cell in cell ' + getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
+                'You have not entered an valid string in a cell in cell ' + getExcelCellToInsertInto(i, WHERE_ROW_INDEX) + '. Valid string for row 5 is "where" or leave blank')
 
     return validateData(worksheet) and valid_template
 
