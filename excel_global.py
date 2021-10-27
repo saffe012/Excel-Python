@@ -187,8 +187,8 @@ def validWorksheet(worksheet, validate_with_sql, title):
         title + " worksheet?"
     yes = "Yes"
     no = "No"
-    write_script_for, additional_box_val = gui.createYesNoBox(
-        description, yes, no, additional_box=True)
+    write_script_for, additional_box_val = gui.createTwoChoiceBox(
+        description, yes, no, additional_box=(True, 'Do this for all spreadsheets.'))
 
     valid_template = True
     if validate_with_sql == 'Generic':

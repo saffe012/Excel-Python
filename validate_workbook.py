@@ -21,7 +21,7 @@ def validationMode():
 
     workbook = gui.openExcelFile("Choose the Excel workbook you'd like to validate.")
 
-    validate_with_sql, additional_box_val = gui.createYesNoBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
+    validate_with_sql, additional_box_val = gui.createTwoChoiceBox(  # tkinter dialog box that asks user if they want to connect to a SQL database to validate spreadsheet
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
     any_valid_sheets, all_valid_sheets = validWorkbook(

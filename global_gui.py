@@ -96,14 +96,16 @@ def closeProgram():
     tkinter.mainloop()
 
 
-def createYesNoBox(description, label1, label2, dimensions="500x500", additional_box=False):
+def createTwoChoiceBox(description, label1, label2, dimensions="500x500", additional_box=(False,'')):
     '''Creates a tkinter pop-up box that gives the user a choice between 2 options
 
     :param1 description: str
     :param2 label1: str
     :param3 label2: str
+    :param4 dimensions: str
+    :param5 additional_box: tuple (bool, str)
 
-    :return: str
+    :return: str, tkinter.IntVar
     '''
 
     root = generateWindow(dimensions, description, relx=0.5, rely=0.1)
@@ -116,8 +118,8 @@ def createYesNoBox(description, label1, label2, dimensions="500x500", additional
     tkinter.Radiobutton(root, text=label2, variable=program_mode,
                         value=label2).place(relx=0.5, rely=0.5, anchor='center')
     additional_box_val = tkinter.IntVar()
-    if additional_box:
-        createCheckBox(root, "Do this for all spreadsheets.", additional_box_val, 0.5, 0.6, select=False)
+    if additional_box[0]:
+        createCheckBox(root, additional_box[1], additional_box_val, 0.5, 0.6, select=False)
     tkinter.Button(root, text='Next', width=25, command=root.destroy).place(
         relx=0.5, rely=0.7, anchor='center')
     tkinter.mainloop()

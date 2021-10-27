@@ -26,13 +26,13 @@ def writeMode():
     output_string = "Choose the Excel workbook you'd like to make scripts for."
     workbook = gui.openExcelFile(output_string)
 
-    validate_with_sql, additional_box_val = gui.createYesNoBox(
+    validate_with_sql, additional_box_val = gui.createTwoChoiceBox(
         'Would you like to validate Workbook with SQL table or generic validation?', 'SQL', 'Generic')
 
     write_to_sql = 'SQL'
     write_to_excel = 'Excel'
     description = 'Would you like to write the sql scripts to a ".sql" file or to an Excel spreadsheet?'
-    write_to, additional_box_val = gui.createYesNoBox(  # write scripts to new SQL or Excel file
+    write_to, additional_box_val = gui.createTwoChoiceBox(  # write scripts to new SQL or Excel file
         description, write_to_sql, write_to_excel)
 
     if write_to == 'SQL':
